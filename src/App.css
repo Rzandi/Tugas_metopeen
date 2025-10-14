@@ -336,7 +336,33 @@ input:focus, select:focus {
   0%, 100% { opacity: 0; transform: translate(-50%, 10px); }
   10%, 90% { opacity: 1; transform: translate(-50%, 0); }
 }
-.success{color:green;}
+.success{
+  color: #16a34a;
+  background-color: #dcfce7;
+  padding: 10px 14px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+.toggle-form {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+.toggle-form p {
+  margin: 0;
+  color: var(--muted);
+}
+.toggle-form button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+}
 .hint{font-size:13px; color:var(--muted); text-align: center; margin-top: 20px;}
 .actions{margin-top:8px;}
 .not-auth{padding:40px; text-align:center; color:var(--muted);}

@@ -19,7 +19,7 @@ export default function Navbar({ user, route, onRouteChange, onLogout }) {
       <nav>
         <NavLink page="dashboard">Dashboard</NavLink>
         <NavLink page="input">Input Transaksi</NavLink>
-        <NavLink page="report">Laporan</NavLink>
+        {user && user.role === 'owner' && <NavLink page="report">Laporan</NavLink>}
       </nav>
       <div className="user-area">
         {user ? (

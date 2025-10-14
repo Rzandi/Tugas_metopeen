@@ -45,7 +45,13 @@ export default function App() {
         {!user && route === 'login' && <LoginForm onLogin={handleLogin} />}
         {user && route === 'dashboard' && <Dashboard key={`dashboard-${refreshKey}`} />}
         {user && route === 'input' && <TransactionForm />}
-        {user && route === 'report' && <ReportView key={`report-${refreshKey}`} />}
+        {user && user.role === 'owner' && route === 'report' && <ReportView key={`report-${refreshKey}`} />}
+        {user && user.role !== 'owner' && route === 'report' && (
+          <div className="not-auth">
+            <h4>Akses Ditolak</h4>
+            <p>Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+          </div>
+        )}
         {!user && route !== 'login' && (
           <div className="not-auth">Silakan login terlebih dahulu.</div>
         )}
