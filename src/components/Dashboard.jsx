@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
 
 function formatIDR(n) {
-  return n.toLocaleString('id-ID', { style:'currency', currency:'IDR' });
+  return n.toLocaleString('id-ID', { style:'currency', currency:'IDR', minimumFractionDigits: 0 });
+}
+
+function DataViz({ sales, expense }) {
+  const total = sales + expense;
+  if (total === 0) return null;
+
+  const salesWidth = (sales / total) * 100;
+  const expenseWidth = (expense / total) * 100;
+
+  return (
+    <div className="data-viz">
+      <div className="bar sales" style={{ width: `${salesWidth}%` }} title={`Penjualan: ${formatIDR(sales)}`}></div>
+      <div className="bar expense" style={{ width: `${expenseWidth}%` }} title={`Pengeluaran: ${formatIDR(expense)}`}></div>
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -80,6 +95,11 @@ export default function Dashboard() {
             </table>
           </div>
         )}
+      </div>
+
+      <div className="card">
+        <h3>Visualisasi Data</h3>
+        <DataViz sales={totals.sales} expense={totals.expense} />
       </div>
     </div>
   );

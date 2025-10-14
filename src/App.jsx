@@ -47,15 +47,22 @@ export default function App() {
         {user && route === 'input' && <TransactionForm />}
         {user && user.role === 'owner' && route === 'report' && <ReportView key={`report-${refreshKey}`} />}
         {user && user.role !== 'owner' && route === 'report' && (
-          <div className="not-auth">
+          <div className="not-auth card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
             <h4>Akses Ditolak</h4>
-            <p>Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+            <p>Halaman ini hanya dapat diakses oleh Owner.</p>
           </div>
         )}
         {!user && route !== 'login' && (
-          <div className="not-auth">Silakan login terlebih dahulu.</div>
+          <div className="not-auth card">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 21h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5"></path><line x1="7" y1="16" x2="21" y2="16"></line><line x1="16" y1="11" x2="16" y2="21"></line></svg>
+            <h4>Anda Belum Login</h4>
+            <p>Silakan login terlebih dahulu untuk mengakses sistem.</p>
+          </div>
         )}
       </main>
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { saveUserToStorage } from '../utils/storage';
 
 export default function LoginForm({ onLogin }) {
@@ -13,8 +13,8 @@ export default function LoginForm({ onLogin }) {
   const getUsers = () => JSON.parse(localStorage.getItem('users') || '[]');
   const saveUsers = (users) => localStorage.setItem('users', JSON.stringify(users));
 
-  // Initialize default users if not present
-  useState(() => {
+  // Initialize default users if not present, runs only once on mount
+  useEffect(() => {
     const users = getUsers();
     if (users.length === 0) {
       saveUsers([
@@ -22,7 +22,7 @@ export default function LoginForm({ onLogin }) {
         { username: 'staff', name: 'Karyawan', role: 'staff', password: 'staff123' }
       ]);
     }
-  });
+  }, []);
 
   const resetForm = () => {
     setUsername('');
