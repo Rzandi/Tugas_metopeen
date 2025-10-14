@@ -7,10 +7,6 @@ export function loadUserFromStorage() {
   return userJson ? JSON.parse(userJson) : null;
 }
 
-export function saveUserToStorage(user) {
-  localStorage.setItem('activeUser', JSON.stringify(user));
-}
-
 export function getUsers() {
   const usersJson = localStorage.getItem('users');
   if (!usersJson) {
