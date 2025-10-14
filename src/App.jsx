@@ -40,7 +40,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Navbar user={user} onRouteChange={handleRouteChange} onLogout={handleLogout} />
+      <Navbar user={user} route={route} onRouteChange={handleRouteChange} onLogout={handleLogout} />
       <main className="main">
         {!user && route === 'login' && <LoginForm onLogin={handleLogin} />}
         {user && route === 'dashboard' && <Dashboard key={`dashboard-${refreshKey}`} />}
