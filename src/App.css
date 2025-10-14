@@ -434,6 +434,105 @@ input:focus, select:focus {
   max-width: 300px;
 }
 
+/* Settings styles */
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.badge-staff {
+  background-color: #e0f2fe;
+  color: #0ea5e9;
+}
+
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.loading-state .spinner {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 16px;
+}
+
+.loading-state .spinner circle {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-password:hover {
+  color: var(--accent);
+}
+
+input.disabled {
+  background-color: #f9fafb;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.settings-view .card {
+  margin-bottom: 0;
+}
+
+.settings-view .form-grid {
+  grid-template-columns: 1fr;
+  max-width: 500px;
+}
+
+.settings-view .message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-view .message svg {
+  flex-shrink: 0;
+}
+
+.section-title {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.section-title h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
 .nav-icon-btn {
   background: transparent;
   border: 0;
