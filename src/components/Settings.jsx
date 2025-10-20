@@ -1,27 +1,36 @@
-import React, { useState, useEffect } from 'react'; // <-- PERBAIKAN 1: Impor useState & useEffect
+import React, { useState, useEffect } from 'react';
 import { saveUserToStorage } from '../utils/storage';
 import { useUserManagement } from '../hooks/useUserManagement';
 
 export default function Settings({ user, onUserUpdate }) {
-  // PERBAIKAN 2: Tambahkan "Guard Clause"
-  // Jika 'user' belum ada (masih loading), tampilkan pesan
-  // dan jangan jalankan sisa kode di bawah ini.
-  if (!user) {
+  
+  // --- PERUBAHAN DI SINI ---
+  // Kita cek lebih ketat.
+  // Jika user-nya null, ATAU user.name-nya kosong, ATAU user.role-nya kosong
+  // maka jangan lanjut.
+  if (!user || !user.name || !user.role) {
     return (
       <div className="settings-view">
-        <div className="loading-state">Memuat data user...</div>
+        <div className="loading-state">Data user tidak lengkap atau masih dimuat...</div>
       </div>
     );
   }
+  // --- Akhir Perubahan ---
 
-  // --- Mulai dari sini, kita aman karena 'user' pasti ada ---
 
-  const [name, setName] = useState(user.name);
+  // Kita beri nilai default (|| '') untuk jaga-jaga jika user.name itu null
+  const [name, setName] = useState(user.name || ''); 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Sekarang kita aman, user.role pasti ada
   const { users, isLoading, deleteUser, updateUser } = useUserManagement(user.role);
 
+  // ... (Sisa kodenya SAMA PERSIS seperti sebelumnya) ...
+  // ... (useEffect, handleProfileUpdate, handleDeleteUser) ...
+  // ... (return (...)) ...
+  
   // Auto-dismiss messages after 3 seconds
   useEffect(() => {
     if (message.text) {
@@ -47,7 +56,8 @@ export default function Settings({ user, onUserUpdate }) {
       }
     }
 
-    const updates = { name };
+    // Pastikan 'name' tidak kosong, meskipun user.name awalnya null
+    const updates = { name: name || user.name }; 
     if (password) {
       updates.password = password;
     }
