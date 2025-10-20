@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // <-- PERBAIKAN 1: Impor useState & useEffect
 import { saveUserToStorage } from '../utils/storage';
 import { useUserManagement } from '../hooks/useUserManagement';
 
 export default function Settings({ user, onUserUpdate }) {
+  // PERBAIKAN 2: Tambahkan "Guard Clause"
+  // Jika 'user' belum ada (masih loading), tampilkan pesan
+  // dan jangan jalankan sisa kode di bawah ini.
+  if (!user) {
+    return (
+      <div className="settings-view">
+        <div className="loading-state">Memuat data user...</div>
+      </div>
+    );
+  }
+
+  // --- Mulai dari sini, kita aman karena 'user' pasti ada ---
+
   const [name, setName] = useState(user.name);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -138,7 +151,7 @@ export default function Settings({ user, onUserUpdate }) {
                       <td>{staff.username}</td>
                       <td><span className="badge badge-staff">{staff.role}</span></td>
                       <td>
-                        <button 
+                        <button
                           className="btn btn-danger small"
                           onClick={() => handleDeleteUser(staff.username, staff.name)}
                         >
