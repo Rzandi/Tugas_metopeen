@@ -76,31 +76,64 @@ class StatusCheckCreate(BaseModel):
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    """
+    Health check endpoint
+    """
+    logger.info("Health check endpoint called")
+    return {"message": "Hello World", "status": "healthy"}
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    """
+    Create a new status check entry
+    """
+    try:
+        logger.info(f"Creating status check for client: {input.client_name}")
+        
+        status_dict = input.model_dump()
+        status_obj = StatusCheck(**status_dict)
+        
+        # Convert to dict and serialize datetime to ISO string for MongoDB
+        doc = status_obj.model_dump()
+        doc['timestamp'] = doc['timestamp'].isoformat()
+        
+        result = await db.status_checks.insert_one(doc)
+        
+        if not result.inserted_id:
+            logger.error("Failed to insert status check")
+            raise HTTPException(status_code=500, detail="Failed to create status check")
+        
+        logger.info(f"✅ Status check created successfully with ID: {status_obj.id}")
+        return status_obj
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error creating status check: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 @api_router.get("/status", response_model=List[StatusCheck])
 async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+    """
+    Get all status checks
+    """
+    try:
+        logger.info("Fetching all status checks")
+        
+        # Exclude MongoDB's _id field from the query results
+        status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+        
+        # Convert ISO string timestamps back to datetime objects
+        for check in status_checks:
+            if isinstance(check['timestamp'], str):
+                check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+        
+        logger.info(f"✅ Retrieved {len(status_checks)} status checks")
+        return status_checks
+        
+    except Exception as e:
+        logger.error(f"❌ Error fetching status checks: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 # Include the router in the main app
 app.include_router(api_router)
