@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { saveUserToStorage } from '../utils/storage';
-import { useUserManagement } from '../hooks/useUserManagement';
+import { updateUser, deleteUser, getUsers } from '../services/api';
 
 export default function Settings({ user, onUserUpdate }) {
   const [name, setName] = useState(user.name);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
-  const { users, isLoading, deleteUser, updateUser } = useUserManagement(user.role);
+  const [isLoading, setIsLoading] = useState(false);
+  const [staffList, setStaffList] = useState([]);
 
   // Auto-dismiss messages after 3 seconds
   useEffect(() => {
@@ -19,54 +19,62 @@ export default function Settings({ user, onUserUpdate }) {
     }
   }, [message.text]);
 
+  useEffect(() => {
+    const loadStaffList = async () => {
+      if (user.role === 'owner') {
+        try {
+          setIsLoading(true);
+          const response = await getUsers(user.token);
+          setStaffList(response.data);
+        } catch (error) {
+          setMessage({ type: 'error', text: error.message });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadStaffList();
+  }, [user.role, user.token]);
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
 
-    // Enhanced password validation
-    if (password) {
-      if (password.length < 6) {
-        setMessage({ type: 'error', text: 'Password harus minimal 6 karakter.' });
-        return;
-      }
-      if (password !== confirmPassword) {
-        setMessage({ type: 'error', text: 'Password konfirmasi tidak cocok.' });
-        return;
-      }
-    }
-
-    const updates = { name };
-    if (password) {
-      updates.password = password;
-    }
-
-    const success = await updateUser(user.username, updates);
-    if (!success) {
-      setMessage({ type: 'error', text: 'Gagal memperbarui profil.' });
+    if (password && password !== confirmPassword) {
+      setMessage({ type: 'error', text: 'Password dan konfirmasi password tidak cocok!' });
       return;
     }
 
-    const updatedUser = { ...user, ...updates };
-    saveUserToStorage(updatedUser);
-    onUserUpdate(updatedUser);
+    try {
+      const updates = { name };
+      if (password) {
+        updates.password = password;
+      }
+
+      const response = await updateUser(user.id, updates, user.token);
+      onUserUpdate({ ...user, name: response.data.name });
+      setMessage({ type: 'success', text: 'Profil berhasil diperbarui!' });
+      setPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message });
+    }
 
     setMessage({ type: 'success', text: 'Profil berhasil diperbarui.' });
     setPassword('');
     setConfirmPassword('');
   };
 
-  const handleDeleteUser = async (usernameToDelete, staffName) => {
-    if (window.confirm(
-      `Apakah Anda yakin ingin menghapus akun staff:\n\n` +
-      `Nama: ${staffName}\n` +
-      `Username: ${usernameToDelete}\n\n` +
-      `Tindakan ini tidak dapat dibatalkan.`
-    )) {
-      const success = await deleteUser(usernameToDelete);
-      if (success) {
-        setMessage({ type: 'success', text: `Pengguna ${staffName} berhasil dihapus.` });
-      } else {
-        setMessage({ type: 'error', text: 'Gagal menghapus pengguna.' });
-      }
+  const handleDeleteUser = async (userId, staffName) => {
+    if (!window.confirm(`Yakin ingin menghapus staff ${staffName}?`)) {
+      return;
+    }
+
+    try {
+      await deleteUser(userId, user.token);
+      setStaffList(staffList.filter(staff => staff.id !== userId));
+      setMessage({ type: 'success', text: 'Staff berhasil dihapus!' });
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message });
     }
   };
 

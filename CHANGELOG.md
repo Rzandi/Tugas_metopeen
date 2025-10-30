@@ -4,7 +4,30 @@ Di sini Anda akan menemukan riwayat perubahan dan penjelasan untuk setiap pembar
 
 ---
 
-## Pembaruan Terakhir
+## [2.0.0] - 2025-10-14
+### Added
+- Backend Laravel dengan REST API
+- Integrasi MySQL database
+- Token-based authentication dengan Laravel Sanctum
+- API Services untuk semua HTTP requests
+- CORS protection untuk keamanan
+- Role-based middleware di backend
+
+### Changed
+- Migrasi dari localStorage ke REST API
+- Sistem autentikasi sekarang menggunakan token JWT
+- State management untuk menyimpan token
+- Error handling dan loading states yang lebih baik
+- Restrukturisasi komponen untuk menggunakan API
+
+### Security
+- Password hashing di backend
+- Protected API endpoints
+- Token-based authentication
+- Role-based access control
+- CORS protection
+
+## Pembaruan Sebelumnya
 
 ### `App.jsx`
 - **Tampilan Pesan Status**: Komponen `div` untuk pesan "Akses Ditolak" dan "Anda Belum Login" diperbarui.

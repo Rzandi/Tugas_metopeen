@@ -1,17 +1,128 @@
-## Running React on Replit
+# Frozen Food Management System
 
-[React](https://reactjs.org/) is a popular JavaScript library for building user interfaces.
+Aplikasi manajemen penjualan dan pengeluaran untuk toko frozen food.
 
-[Vite](https://vitejs.dev/) is a blazing fast frontend build tool that includes features like Hot Module Reloading (HMR), optimized builds, and TypeScript support out of the box.
+## Teknologi yang Digunakan
 
-Using the two in conjunction is one of the fastest ways to build a web app.
+### Frontend
+- React 18
+- Vite
+- Axios untuk API calls
+- React Router untuk navigasi
 
-### Getting Started
-- Hit run
-- Edit [App.jsx](#src/App.jsx) and watch it live update!
+### Backend
+- Laravel 10
+- MySQL database
+- Laravel Sanctum untuk authentication
+- CORS protection
 
-By default, Replit runs the `dev` script, but you can configure it by changing the `run` field in the [configuration file](#.replit). Here are the vite docs for [serving production websites](https://vitejs.dev/guide/build.html)
+## Persyaratan Sistem
 
-### Typescript
+- Node.js 18+
+- PHP 8.1+
+- MySQL 8.0+
+- Composer
 
-Just rename any file from `.jsx` to `.tsx`. You can also try our [TypeScript Template](https://replit.com/@replit/React-TypeScript)
+## Instalasi
+
+1. Clone repository:
+```bash
+git clone <repository-url>
+cd frozen-food-system
+```
+
+2. Install dependencies frontend:
+```bash
+npm install
+```
+
+3. Install dependencies backend:
+```bash
+cd backend
+composer install
+npm install
+```
+
+4. Setup environment:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+5. Setup database:
+- Buat database MySQL baru: `frozen_food_db`
+- Update konfigurasi database di `.env`
+```bash
+php artisan migrate:fresh --seed
+```
+
+## Menjalankan Aplikasi
+
+1. Backend (di terminal pertama):
+```bash
+cd backend
+php artisan serve
+```
+
+2. Frontend (di terminal kedua):
+```bash
+npm run dev
+```
+
+## Default Users
+
+1. Owner:
+- Username: owner
+- Password: owner123
+
+2. Staff:
+- Username: staff
+- Password: staff123
+
+## Fitur
+
+- [x] Login/Register
+- [x] Dashboard dengan ringkasan
+- [x] Input transaksi (penjualan/pengeluaran)
+- [x] Laporan transaksi (owner only)
+- [x] Manajemen staff (owner only)
+- [x] Update profil
+- [x] Role-based access control
+
+## Struktur Direktori
+
+```
+frozen-food-system/
+├── src/                    # Frontend source files
+│   ├── components/        # React components
+│   ├── services/          # API services
+│   └── utils/            # Utility functions
+├── backend/               # Laravel backend
+│   ├── app/              # Application code
+│   ├── database/         # Migrations & seeds
+│   └── routes/           # API routes
+└── public/               # Static files
+```
+
+## API Endpoints
+
+### Public Routes
+- POST /api/auth/login
+- POST /api/auth/register
+
+### Protected Routes
+- GET /api/users
+- PUT /api/users/{id}
+- DELETE /api/users/{id}
+- GET /api/transactions
+- POST /api/transactions
+- DELETE /api/transactions/{id}
+- GET /api/transactions/summary
+
+## Kontribusi
+
+1. Fork repository
+2. Buat branch baru: `git checkout -b fitur-baru`
+3. Commit perubahan: `git commit -am 'Menambah fitur baru'`
+4. Push ke branch: `git push origin fitur-baru`
+5. Submit pull request

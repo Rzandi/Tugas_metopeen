@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { login, register } from '../services/api';
 import { saveUserToStorage } from '../utils/storage';
 
 export default function LoginForm({ onLogin }) {
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -32,32 +34,34 @@ export default function LoginForm({ onLogin }) {
     setSuccess('');
   };
 
-  const handleLogin = (e) => {
+    const handleLogin = async (e) => {
     e.preventDefault();
-    const users = getUsers();
-    const found = users.find(u => u.username === username && u.password === password);
-    if (!found) {
-      setError('Username atau password salah');
-      return;
+    try {
+      const response = await login(username, password);
+      onLogin(response.data);
+      resetForm();
+    } catch (error) {
+      setError(error.message);
     }
-    saveUserToStorage(found);
-    onLogin(found);
   };
 
-  const handleRegister = (e) => {
+    const handleRegister = async (e) => {
     e.preventDefault();
-    const users = getUsers();
-    if (users.find(u => u.username === username)) {
-      setError('Username sudah digunakan');
+    if (password !== confirmPassword) {
+      setError('Password tidak cocok');
       return;
     }
-    const newUser = { username, password, name, role: 'staff' };
-    users.push(newUser);
-    saveUsers(users);
-    setError('');
-    setSuccess('Pendaftaran berhasil! Silakan login.');
-    setIsRegister(false); // Back to login form
-    resetForm();
+
+    try {
+      await register({ username, password, name });
+      setSuccess('Registrasi berhasil, silakan login');
+      setTimeout(() => {
+        setIsRegister(false);
+        resetForm();
+      }, 2000);
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   const toggleMode = () => {
