@@ -94,16 +94,18 @@ npm run dev
 ## Fitur
 
 - [x] Login/Register
-- [x] Dashboard dengan ringkasan
+- [x] Dashboard dengan ringkasan & visualisasi data
 - [x] Input transaksi (penjualan/pengeluaran)
-- [x] Laporan transaksi (owner only)
-- [x] Manajemen staff (owner only)
+- [x] Hapus Transaksi (Owner only)
+- [x] Laporan transaksi (Owner only)
+- [x] Manajemen Anggota / Staff (Owner only)
 - [x] Update profil
-- [x] Role-based access control
+- [x] Role-based access control (Owner, Admin, Staff)
 - [x] Manajemen Daftar Harga & Stok
 - [x] Approval Workflow untuk Admin
 - [x] Dark Mode Support
 - [x] Mobile Responsive Design
+- [x] Dynamic API URL (Auto-detect Localhost/Network IP)
 
 ## Struktur Direktori
 

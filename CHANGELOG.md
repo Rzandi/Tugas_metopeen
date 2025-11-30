@@ -1,3 +1,27 @@
+## [Released] - 2025-12-01 (Major Update)
+
+### Fitur Baru (Owner Exclusive)
+
+- **Hapus Transaksi**: Owner kini dapat menghapus transaksi langsung dari Dashboard.
+- **Manajemen Anggota**: Halaman khusus bagi Owner untuk melihat dan menghapus akun staff/admin.
+- **Menu Navigasi Khusus**: Link "Anggota" dan "Inbox" hanya muncul untuk Owner.
+
+### UI/UX Improvements
+
+- **Modern Card Design**: Redesain halaman Manajemen Anggota dan Inbox Persetujuan menggunakan layout berbasis kartu yang responsif.
+- **Button Styling**: Update gaya tombol "Jual" (Orange), "Restock" (Emerald), dan "Hapus" (Soft Red) agar lebih menarik dan interaktif.
+- **Dark Mode Consistency**: Perbaikan warna dan variabel CSS agar tampilan dark mode konsisten di seluruh halaman baru.
+- **Feedback Visual**: Penambahan pesan sukses/error dan konfirmasi dialog untuk aksi destruktif.
+
+### Technical & Bug Fixes
+
+- **Dynamic API URL**: Frontend kini otomatis mendeteksi apakah diakses via `localhost` atau IP Network (misal: `192.168.x.x`), sehingga tidak perlu ubah `.env` manual untuk akses mobile.
+- **Session Persistence**: Perbaikan bug dimana user ter-logout saat refresh halaman.
+- **Transaction ID Fix**: Perbaikan error "No query results" saat menghapus transaksi dengan ID string.
+- **Error Handling**: Penambahan header `Accept: application/json` untuk mencegah error parsing HTML pada request API.
+
+---
+
 ## [Unreleased] - 2025-11-30
 
 ### Fitur Baru
