@@ -84,7 +84,7 @@ npm run dev
 1. Owner:
 
 - Username: owner
-- Password: password
+- Password: owner123
 
 2. Staff:
 

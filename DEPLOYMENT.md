@@ -57,3 +57,6 @@ Railway adalah platform cloud yang sangat mudah untuk deploy aplikasi Laravel da
 
 - **CORS Error**: Jika frontend gagal akses backend, pastikan di `backend/config/cors.php` atau `.env`, `ALLOWED_ORIGINS` diisi dengan URL Vercel Anda (atau `*` untuk sementara).
 - **Database Error**: Pastikan variabel environment DB di Railway sudah benar dan sesuai dengan yang dibutuhkan Laravel.
+- **PHP Version Error**: Jika error `requires php >=8.4`, tambahkan Environment Variable di Railway:
+  - **Name**: `NIXPACKS_PHP_VERSION`
+  - **Value**: `8.4`
