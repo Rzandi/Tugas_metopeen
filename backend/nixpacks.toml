@@ -16,4 +16,4 @@ nixPkgs = [
 cmds = ["composer install --optimize-autoloader --no-dev --no-interaction --no-progress"]
 
 [start]
-cmd = "sh -c 'echo \"Starting on PORT $PORT\" && php artisan optimize:clear && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public'"
+cmd = "php -v && echo \"PORT is $PORT\" && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public"
