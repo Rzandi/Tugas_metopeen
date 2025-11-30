@@ -19,10 +19,17 @@ class AuthController extends Controller
 
         $user = User::where('username', $request->username)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'username' => ['Username atau password salah'],
             ]);
+        }
+
+        if (!$user->is_approved) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda menunggu persetujuan Owner.'
+            ], 403);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -46,24 +53,30 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required|unique:users',
             'password' => 'required|min:6',
-            'name' => 'required'
+            'name' => 'required',
+            'role' => 'in:admin,staff'
         ]);
+
+        $role = $request->role ?? 'staff';
+        $isApproved = $role === 'staff';
 
         $user = User::create([
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'name' => $request->name,
-            'role' => 'staff'
+            'role' => $role,
+            'is_approved' => $isApproved
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Registrasi berhasil',
+            'message' => $isApproved ? 'Registrasi berhasil' : 'Registrasi berhasil. Menunggu persetujuan Owner.',
             'data' => [
                 'id' => $user->id,
                 'username' => $user->username,
                 'name' => $user->name,
-                'role' => $user->role
+                'role' => $user->role,
+                'is_approved' => $user->is_approved
             ]
         ], 201);
     }

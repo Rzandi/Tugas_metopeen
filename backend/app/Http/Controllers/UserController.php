@@ -10,8 +10,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::where('role', 'staff')->get();
-        
+        // Return all users except owner
+        $users = User::where('role', '!=', 'owner')->get();
+
         return response()->json([
             'success' => true,
             'data' => $users
@@ -28,7 +29,7 @@ class UserController extends Controller
         ]);
 
         $data = ['name' => $request->name];
-        
+
         if ($request->password) {
             $data['password'] = Hash::make($request->password);
         }
@@ -45,7 +46,7 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
+
         if ($user->role === 'owner') {
             return response()->json([
                 'success' => false,
