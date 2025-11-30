@@ -1,4 +1,7 @@
 const getBaseUrl = () => {
+  if (process.env.REACT_APP_BACKEND_URL) {
+    return `${process.env.REACT_APP_BACKEND_URL}/api`;
+  }
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
      return 'http://localhost:8000/api';
