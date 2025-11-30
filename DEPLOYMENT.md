@@ -22,24 +22,11 @@ Railway adalah platform cloud yang sangat mudah untuk deploy aplikasi Laravel da
     - Tambahkan variabel tambahan:
       - `APP_KEY`: (Copy dari file `.env` di laptop Anda, misal `base64:...`)
       - `APP_DEBUG`: `false`
-      - `APP_URL`: (Kosongkan dulu, nanti diisi setelah deploy berhasil)
-7.  **Deploy**: Railway akan otomatis deploy. Tunggu sampai sukses.
-8.  **Generate Public Domain**:
-    - Di service backend, ke tab "Settings" > "Networking" > "Generate Domain".
-    - Copy domain yang muncul (misal: `backend-production.up.railway.app`). Ini adalah **API URL** Anda.
-
-## Bagian 2: Deploy Frontend ke Vercel
-
-1.  **Login Vercel**: Buka [vercel.com](https://vercel.com).
-2.  **Add New Project**: Import repo `Tugas_metopeen`.
-3.  **Konfigurasi Project**:
-    - **Framework Preset**: Create React App (atau Vite, sesuaikan deteksi).
-    - **Root Directory**: Klik Edit, pilih folder `frontend`.
-4.  **Environment Variables**:
+7.  **Environment Variables**:
     - Tambahkan variable baru:
       - **Name**: `REACT_APP_BACKEND_URL`
       - **Value**: `https://backend-production.up.railway.app` (Paste domain dari Railway tadi, **tanpa** `/api` dan pastikan pakai `https://`).
-5.  **Deploy**: Klik Deploy.
+8.  **Deploy**: Klik Deploy.
 
 ## Bagian 3: Finalisasi
 
