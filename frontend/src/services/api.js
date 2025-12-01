@@ -6,7 +6,8 @@ const getBaseUrl = () => {
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
      return 'http://localhost:8000/api';
   }
-  return `http://${hostname}:8000/api`;
+  // Use Railway backend for production
+  return 'https://tugasmetopeen-production.up.railway.app/api';
 };
 
 const API_URL = getBaseUrl();
