@@ -27,14 +27,31 @@ class TransactionController extends Controller
         $request->validate([
             'type' => 'required|in:penjualan,pengeluaran',
             'date' => 'required|date',
-            'product' => 'required',
+            'product' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
             'price' => 'required|numeric|min:0',
-            'note' => 'nullable'
+            'note' => 'nullable|string|max:500'
         ]);
 
+        // Check stock availability for sales
+        if ($request->type === 'penjualan') {
+            $item = \App\Models\PriceList::where('product_name', $request->product)->first();
+            if ($item && $item->stock < $request->quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi. Stok tersedia: ' . $item->stock
+                ], 400);
+            }
+        }
+
+        // Generate unique transaction ID
+        $transactionId = 'T' . time() . rand(1000, 9999);
+        while (Transaction::where('id', $transactionId)->exists()) {
+            $transactionId = 'T' . time() . rand(1000, 9999);
+        }
+
         $transaction = Transaction::create([
-            'id' => 'T' . time(),
+            'id' => $transactionId,
             'type' => $request->type,
             'date' => $request->date,
             'product' => $request->product,
@@ -93,12 +110,23 @@ class TransactionController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
+        // Check stock availability for sales if increasing quantity
+        $diff = $request->quantity - $oldQty;
+        if ($transaction->type === 'penjualan' && $diff > 0) {
+            $item = \App\Models\PriceList::where('product_name', $transaction->product)->first();
+            if ($item && $item->stock < $diff) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Stok tidak mencukupi untuk update. Stok tersedia: ' . $item->stock
+                ], 400);
+            }
+        }
+
         $transaction->quantity = $request->quantity;
         $transaction->total = $transaction->quantity * $transaction->price;
         $transaction->save();
 
         // Sync stock difference
-        $diff = $request->quantity - $oldQty;
         if ($diff != 0) {
             $item = \App\Models\PriceList::where('product_name', $transaction->product)->first();
             if ($item) {

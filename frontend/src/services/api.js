@@ -11,7 +11,6 @@ const getBaseUrl = () => {
 };
 
 const API_URL = getBaseUrl();
-console.log('API_URL:', API_URL);
 
 export const login = async (username, password) => {
   const response = await fetch(`${API_URL}/auth/login`, {

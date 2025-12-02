@@ -7,7 +7,7 @@ const getPriceList = async (token) => {
   const response = await axios.get(API_URL, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  return response.data;
+  return response.data.data; // Updated to handle { success, data } format
 };
 
 const updateItem = async (id, data, token) => {

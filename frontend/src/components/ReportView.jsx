@@ -1,207 +1,334 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getTransactions } from '../services/api';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+} from 'recharts';
+import { 
+  Calendar, Download, FileText, TrendingUp, TrendingDown, DollarSign, Printer
+} from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 function formatIDR(n) {
-  return n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  return n.toLocaleString('id-ID', { style:'currency', currency:'IDR' });
 }
 
 export default function ReportView({ token }) {
   const [transactions, setTransactions] = useState([]);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [chartType, setChartType] = useState('bar'); // bar or area
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getTransactions(token);
-        setTransactions(response.data);
-      } catch (error) {
-        console.error('Failed to fetch transactions', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
+    // Set default to this month
+    const date = new Date();
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    setStartDate(firstDay.toISOString().slice(0,10));
+    setEndDate(lastDay.toISOString().slice(0,10));
   }, [token]);
 
-  const generate = () => {
-    const f = from || '1970-01-01';
-    const t = to || '9999-12-31';
-    const filtered = transactions.filter(trx => trx.date >= f && trx.date <= t);
-    const totals = filtered.reduce((acc, t) => {
-      if (t.type === 'penjualan') acc.sales += Number(t.total);
-      else acc.expense += Number(t.total);
-      return acc;
-    }, { sales: 0, expense: 0 });
-    setReport({ filtered, totals });
+  const fetchData = async () => {
+    try {
+      const response = await getTransactions(token);
+      setTransactions(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch transactions', error);
+      setLoading(false);
+    }
   };
 
-  const exportCSV = () => {
-    if (!report) return;
-    const rows = [['ID', 'Tanggal', 'Jenis', 'Produk', 'Qty', 'Harga', 'Total', 'Note']];
-    report.filtered.forEach(r => rows.push([r.id, r.date, r.type, r.product, r.quantity, r.price, r.total, r.note]));
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `report_${from || 'all'}_${to || 'all'}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const setDatePreset = (days) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    setStartDate(start.toISOString().slice(0,10));
+    setEndDate(end.toISOString().slice(0,10));
+  };
+
+  const filteredTransactions = transactions.filter(t => {
+    if (!startDate || !endDate) return true;
+    const d = new Date(t.date);
+    return d >= new Date(startDate) && d <= new Date(endDate);
+  });
+
+  // Aggregate data for chart
+  const chartData = filteredTransactions.reduce((acc, t) => {
+    const date = new Date(t.date).toLocaleDateString('id-ID');
+    const existing = acc.find(item => item.date === date);
+    if (existing) {
+      if (t.type === 'penjualan') existing.sales += Number(t.total);
+      else existing.expense += Number(t.total);
+    } else {
+      acc.push({
+        date,
+        sales: t.type === 'penjualan' ? Number(t.total) : 0,
+        expense: t.type === 'pengeluaran' ? Number(t.total) : 0,
+      });
+    }
+    return acc;
+  }, []).sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort by date? Needs better parsing for sort, but string sort might work for simple cases or use original date obj
+
+  const totals = filteredTransactions.reduce((acc, t) => {
+    if (t.type === 'penjualan') acc.sales += Number(t.total);
+    else acc.expense += Number(t.total);
+    return acc;
+  }, { sales: 0, expense: 0 });
+
+  const netProfit = totals.sales - totals.expense;
+
+  const exportExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(filteredTransactions.map(t => ({
+      Tanggal: new Date(t.date).toLocaleDateString('id-ID'),
+      Tipe: t.type,
+      Produk: t.product,
+      Qty: t.quantity,
+      Harga: t.price,
+      Total: t.total,
+      Catatan: t.note
+    })));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+    XLSX.writeFile(wb, "Laporan_Keuangan.xlsx");
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Laporan Keuangan", 14, 15);
+    doc.text(`Periode: ${startDate} s/d ${endDate}`, 14, 25);
+    
+    doc.autoTable({
+      startY: 30,
+      head: [['Tanggal', 'Tipe', 'Produk', 'Qty', 'Total']],
+      body: filteredTransactions.map(t => [
+        new Date(t.date).toLocaleDateString('id-ID'),
+        t.type,
+        t.product,
+        t.quantity,
+        formatIDR(t.total)
+      ]),
+    });
+    doc.save("Laporan_Keuangan.pdf");
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-64">
+    <div className="flex justify-center items-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
   );
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-7xl">
-      <motion.div
+    <div className="container mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Laporan Keuangan</h1>
+          <p className="text-muted-foreground mt-1">Analisis pendapatan dan pengeluaran</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={exportExcel} className="btn btn-outline gap-2">
+            <FileText className="w-4 h-4" /> Excel
+          </button>
+          <button onClick={exportPDF} className="btn btn-primary gap-2 shadow-lg shadow-primary/20">
+            <Download className="w-4 h-4" /> PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="card p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <input 
+            type="date" 
+            value={startDate} 
+            onChange={e=>setStartDate(e.target.value)} 
+            className="input w-auto"
+          />
+          <span className="text-muted-foreground">-</span>
+          <input 
+            type="date" 
+            value={endDate} 
+            onChange={e=>setEndDate(e.target.value)} 
+            className="input w-auto"
+          />
+        </div>
+        
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto">
+          <button onClick={() => setDatePreset(7)} className="btn btn-ghost text-xs whitespace-nowrap">7 Hari Terakhir</button>
+          <button onClick={() => setDatePreset(30)} className="btn btn-ghost text-xs whitespace-nowrap">30 Hari Terakhir</button>
+          <button onClick={() => setDatePreset(90)} className="btn btn-ghost text-xs whitespace-nowrap">3 Bulan Terakhir</button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="card p-6 border-l-4 border-l-primary"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Pemasukan</p>
+              <h3 className="text-2xl font-bold mt-1">{formatIDR(totals.sales)}</h3>
+            </div>
+            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="card p-6 border-l-4 border-l-destructive"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Total Pengeluaran</p>
+              <h3 className="text-2xl font-bold mt-1">{formatIDR(totals.expense)}</h3>
+            </div>
+            <div className="p-2 bg-destructive/10 rounded-lg text-destructive">
+              <TrendingDown className="w-5 h-5" />
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="card p-6 border-l-4 border-l-green-500"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Laba Bersih</p>
+              <h3 className={`text-2xl font-bold mt-1 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatIDR(netProfit)}
+              </h3>
+            </div>
+            <div className={`p-2 rounded-lg ${netProfit >= 0 ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <DollarSign className="w-5 h-5" />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Chart */}
+      <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ delay: 0.3 }}
+        className="card p-6"
       >
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Laporan Keuangan</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Analisis pendapatan dan pengeluaran</p>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold">Grafik Keuangan</h3>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setChartType('bar')}
+              className={`p-2 rounded ${chartType === 'bar' ? 'bg-muted' : 'hover:bg-muted'}`}
+            >
+              Bar
+            </button>
+            <button 
+              onClick={() => setChartType('area')}
+              className={`p-2 rounded ${chartType === 'area' ? 'bg-muted' : 'hover:bg-muted'}`}
+            >
+              Area
+            </button>
           </div>
         </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Dari Tanggal</label>
-              <input 
-                type="date" 
-                value={from} 
-                onChange={e => setFrom(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sampai Tanggal</label>
-              <input 
-                type="date" 
-                value={to} 
-                onChange={e => setTo(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={generate}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                Generate
-              </button>
-              <button 
-                onClick={exportCSV} 
-                disabled={!report}
-                className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 border ${!report ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Export CSV
-              </button>
-            </div>
-          </div>
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === 'bar' ? (
+              <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rp${value/1000}k`} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: 'var(--radius)' }}
+                  formatter={(value) => formatIDR(value)}
+                />
+                <Legend />
+                <Bar dataKey="sales" name="Pemasukan" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expense" name="Pengeluaran" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            ) : (
+              <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rp${value/1000}k`} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: 'var(--radius)' }}
+                  formatter={(value) => formatIDR(value)}
+                />
+                <Area type="monotone" dataKey="sales" name="Pemasukan" stroke="#6366f1" fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="expense" name="Pengeluaran" stroke="#ef4444" fillOpacity={1} fill="url(#colorExpense)" />
+              </AreaChart>
+            )}
+          </ResponsiveContainer>
         </div>
+      </motion.div>
 
-        {report ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                </div>
-                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Penjualan</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{formatIDR(report.totals.sales)}</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                </div>
-                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Pengeluaran</h3>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{formatIDR(report.totals.expense)}</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                </div>
-                <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Laba Bersih</h3>
-                <p className={`text-2xl font-bold mt-2 ${report.totals.sales - report.totals.expense >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {formatIDR(report.totals.sales - report.totals.expense)}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                <h3 className="font-semibold text-gray-800 dark:text-white">Rincian Transaksi</h3>
-                <span className="text-sm text-gray-500 dark:text-gray-400">{report.filtered.length} transaksi</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-700/50">
-                      <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal</th>
-                      <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jenis</th>
-                      <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Produk</th>
-                      <th className="py-3 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Qty</th>
-                      <th className="py-3 px-6 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {report.filtered.map((r, index) => (
-                      <motion.tr 
-                        key={r.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
-                      >
-                        <td className="py-3 px-6 text-sm text-gray-700 dark:text-gray-300">{new Date(r.date).toLocaleDateString('id-ID')}</td>
-                        <td className="py-3 px-6 text-sm">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            r.type === 'penjualan' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                          }`}>
-                            {r.type}
-                          </span>
-                        </td>
-                        <td className="py-3 px-6 text-sm text-gray-700 dark:text-gray-300">{r.product}</td>
-                        <td className="py-3 px-6 text-sm text-gray-700 dark:text-gray-300">{r.quantity}</td>
-                        <td className="py-3 px-6 text-sm text-gray-700 dark:text-gray-300 text-right font-medium">{formatIDR(r.total)}</td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Belum Ada Laporan</h3>
-            <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Silakan pilih rentang tanggal dan klik "Generate" untuk melihat analisis keuangan Anda.</p>
-          </div>
-        )}
+      {/* Detailed Table */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="card overflow-hidden"
+      >
+        <div className="p-6 border-b border-border">
+          <h3 className="text-lg font-semibold">Rincian Transaksi</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-muted/50 text-muted-foreground font-medium uppercase text-xs">
+              <tr>
+                <th className="px-6 py-4">Tanggal</th>
+                <th className="px-6 py-4">Tipe</th>
+                <th className="px-6 py-4">Produk</th>
+                <th className="px-6 py-4 text-center">Qty</th>
+                <th className="px-6 py-4 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredTransactions.map((t) => (
+                <tr key={t.id} className="hover:bg-muted/30 transition-colors">
+                  <td className="px-6 py-4">{new Date(t.date).toLocaleDateString('id-ID')}</td>
+                  <td className="px-6 py-4">
+                    <span className={`badge ${
+                      t.type === 'penjualan' 
+                        ? 'bg-green-50 text-green-700 border-green-200' 
+                        : 'bg-red-50 text-red-700 border-red-200'
+                    }`}>
+                      {t.type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-medium">{t.product}</td>
+                  <td className="px-6 py-4 text-center">{t.quantity}</td>
+                  <td className="px-6 py-4 text-right font-medium">{formatIDR(t.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </motion.div>
     </div>
   );

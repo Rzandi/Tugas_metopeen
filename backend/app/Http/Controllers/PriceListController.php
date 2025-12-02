@@ -26,14 +26,29 @@ class PriceListController extends Controller
             return $item;
         });
 
-        return response()->json($items);
+        return response()->json([
+            'success' => true,
+            'data' => $items
+        ]);
     }
 
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'product_name' => 'sometimes|string|max:255',
+            'category' => 'sometimes|string|max:100',
+            'price' => 'sometimes|numeric|min:0',
+            'stock' => 'sometimes|integer|min:0',
+        ]);
+
         $item = PriceList::findOrFail($id);
         $item->update($request->all());
-        return response()->json($item);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil diperbarui',
+            'data' => $item
+        ]);
     }
 
     public function sale(Request $request, $id)
