@@ -11,12 +11,14 @@ const getBaseUrl = () => {
 };
 
 const API_URL = getBaseUrl();
+console.log('API_URL:', API_URL);
 
 export const login = async (username, password) => {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     },
     body: JSON.stringify({ username, password }),
   });
@@ -33,6 +35,7 @@ export const register = async (userData) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
     },
     body: JSON.stringify(userData),
   });
@@ -49,6 +52,7 @@ export const logout = async (token) => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
   
@@ -63,6 +67,7 @@ export const getUsers = async (token) => {
   const response = await fetch(`${API_URL}/users`, {
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
   
@@ -79,6 +84,7 @@ export const createTransaction = async (transactionData, token) => {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
     body: JSON.stringify(transactionData),
   });
@@ -94,6 +100,7 @@ export const getTransactions = async (token) => {
   const response = await fetch(`${API_URL}/transactions`, {
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
   
@@ -132,6 +139,7 @@ export const updateUser = async (userId, userData, token) => {
 
   const headers = {
     'Authorization': `Bearer ${token}`,
+    'Accept': 'application/json',
   };
 
   if (!isFormData) {
@@ -171,6 +179,7 @@ export const getPendingApprovals = async (token) => {
   const response = await fetch(`${API_URL}/approvals`, {
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
   
@@ -186,6 +195,7 @@ export const approveUser = async (userId, token) => {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
   });
   
@@ -218,6 +228,7 @@ export const updateTransaction = async (id, data, token) => {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
     },
     body: JSON.stringify(data),
   });
