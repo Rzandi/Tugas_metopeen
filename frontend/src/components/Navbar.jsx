@@ -73,7 +73,7 @@ export default function Navbar({ user, route, onRouteChange, onLogout }) {
         <nav className="hidden md:flex" style={{ gap: '0.5rem' }}>
           <NavLink page="dashboard">Dashboard</NavLink>
           <NavLink page="input">Input Transaksi</NavLink>
-          <NavLink page="pricelist">Daftar Harga</NavLink>
+          <NavLink page="pricelist">Daftar Barang</NavLink>
           {user && user.role === 'owner' && (
             <>
               <NavLink page="report">Laporan</NavLink>
@@ -144,7 +144,7 @@ export default function Navbar({ user, route, onRouteChange, onLogout }) {
           
           <NavLink page="dashboard" mobile>Dashboard</NavLink>
           <NavLink page="input" mobile>Input Transaksi</NavLink>
-          <NavLink page="pricelist" mobile>Daftar Harga</NavLink>
+          <NavLink page="pricelist" mobile>Daftar Barang</NavLink>
           {user && user.role === 'owner' && (
             <>
               <NavLink page="report" mobile>Laporan</NavLink>

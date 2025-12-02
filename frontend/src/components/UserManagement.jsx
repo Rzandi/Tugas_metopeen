@@ -94,10 +94,46 @@ export default function UserManagement({ token }) {
                 </div>
                 
                 <h3 className="text-lg font-bold mb-1 truncate" title={user.name}>{user.name}</h3>
-                <p className="text-muted-foreground text-sm mb-4 flex items-center gap-2">
+                <p className="text-muted-foreground text-sm mb-2 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                   @{user.username}
                 </p>
+
+                <div className="mb-4 text-sm">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-muted-foreground">Status:</span>
+                    {(() => {
+                      const lastLogin = user.last_login_at ? new Date(user.last_login_at) : null;
+                      const isOnline = lastLogin && lastLogin > new Date(Date.now() - 5 * 60 * 1000);
+                      const isToday = lastLogin && lastLogin.toDateString() === new Date().toDateString();
+                      
+                      let statusText = 'Offline';
+                      let statusClass = 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+                      
+                      if (isOnline) {
+                        statusText = 'Online';
+                        statusClass = 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300';
+                      } else if (isToday) {
+                        statusText = 'Hadir';
+                        statusClass = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300';
+                      }
+
+                      return (
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusClass}`}>
+                          {statusText}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Terakhir Login:</span>
+                    <span className="text-foreground font-medium text-xs">
+                      {user.last_login_at 
+                        ? new Date(user.last_login_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                        : '-'}
+                    </span>
+                  </div>
+                </div>
 
                 <div className="pt-4 border-t border-border flex justify-end">
                   <button 

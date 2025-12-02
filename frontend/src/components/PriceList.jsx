@@ -70,7 +70,7 @@ const PriceList = ({ token }) => {
     <div className="container mx-auto p-4 md:p-6 max-w-7xl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Daftar Harga & Stok</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Daftar Barang</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Kelola inventaris dan harga barang</p>
         </div>
       </div>
@@ -82,12 +82,12 @@ const PriceList = ({ token }) => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">ID Barang</th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Kategori</th>
+                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Kode Barang</th>
                 <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Nama Barang</th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Satuan</th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Harga Jual</th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Stok</th>
+                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Brand</th>
+                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Stok Barang</th>
+                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Qty Penjualan</th>
+                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Qty Pembelian</th>
                 <th className="py-4 px-6 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
@@ -101,15 +101,11 @@ const PriceList = ({ token }) => {
                   className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-200"
                 >
                   <td className="py-4 px-6 text-sm font-medium text-gray-900 dark:text-gray-200 whitespace-nowrap">{item.product_id}</td>
+                  <td className="py-4 px-6 text-sm text-gray-700 dark:text-gray-300 font-medium">{item.product_name}</td>
                   <td className="py-4 px-6 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                       {item.category}
                     </span>
-                  </td>
-                  <td className="py-4 px-6 text-sm text-gray-700 dark:text-gray-300 font-medium">{item.product_name}</td>
-                  <td className="py-4 px-6 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{item.unit}</td>
-                  <td className="py-4 px-6 text-sm text-gray-700 dark:text-gray-300 font-semibold whitespace-nowrap">
-                    Rp {item.price.toLocaleString('id-ID')}
                   </td>
                   <td className="py-4 px-6 text-sm whitespace-nowrap">
                     {editId === item.id ? (
@@ -129,6 +125,12 @@ const PriceList = ({ token }) => {
                         {item.stock} Unit
                       </span>
                     )}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap font-semibold">
+                    {item.qty_sales || 0}
+                  </td>
+                  <td className="py-4 px-6 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap font-semibold">
+                    {item.qty_purchases || 0}
                   </td>
                   <td className="py-4 px-6 text-sm space-x-2 whitespace-nowrap">
                     <div className="flex items-center gap-2">

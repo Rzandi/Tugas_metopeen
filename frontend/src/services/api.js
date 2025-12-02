@@ -197,3 +197,20 @@ export const rejectUser = async (userId, token) => {
   }
   return data;
 };
+
+export const updateTransaction = async (id, data, token) => {
+  const response = await fetch(`${API_URL}/transactions/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  
+  const responseData = await response.json();
+  if (!response.ok) {
+    throw new Error(responseData.message || 'Error memperbarui transaksi');
+  }
+  return responseData;
+};

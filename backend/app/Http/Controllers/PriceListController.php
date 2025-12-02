@@ -9,7 +9,24 @@ class PriceListController extends Controller
 {
     public function index()
     {
-        return response()->json(PriceList::all());
+        $items = PriceList::all();
+
+        // Calculate sales and purchases from transactions
+        $transactions = \App\Models\Transaction::all();
+
+        $items->transform(function ($item) use ($transactions) {
+            $item->qty_sales = $transactions->where('type', 'penjualan')
+                ->where('product', $item->product_name)
+                ->sum('quantity');
+
+            $item->qty_purchases = $transactions->where('type', 'pengeluaran')
+                ->where('product', $item->product_name)
+                ->sum('quantity');
+
+            return $item;
+        });
+
+        return response()->json($items);
     }
 
     public function update(Request $request, $id)
