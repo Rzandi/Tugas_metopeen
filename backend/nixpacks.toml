@@ -9,11 +9,17 @@ nixPkgs = [
     "php84Extensions.curl",
     "php84Extensions.zip",
     "php84Extensions.intl",
-    "composer"
+    "composer",
+    "nodejs_20",
+    "npm-9"
 ]
 
 [phases.build]
-cmds = ["composer install --optimize-autoloader --no-dev --no-interaction --no-progress"]
+cmds = [
+    "composer install --optimize-autoloader --no-dev --no-interaction --no-progress",
+    "npm install",
+    "npm run build"
+]
 
 [start]
 cmd = "php -v && echo \"PORT is $PORT\" && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public"
