@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getPendingApprovals, approveUser, rejectUser } from '../services/api';
+import { animate } from 'animejs';
 
 export default function ApprovalInbox({ token }) {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  const inboxRef = useRef(null);
+
+  useEffect(() => {
+    if (inboxRef.current) {
+      animate(inboxRef.current, {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, []);
 
   useEffect(() => {
     fetchPendingUsers();
@@ -46,7 +60,7 @@ export default function ApprovalInbox({ token }) {
   if (loading) return <div className="p-8 text-center text-muted-foreground">Memuat inbox...</div>;
 
   return (
-    <div className="approval-inbox container mx-auto p-4 max-w-4xl fade-in-up">
+    <div className="approval-inbox container mx-auto p-4 max-w-4xl fade-in-up" ref={inboxRef} style={{ opacity: 0 }}>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-3xl font-bold text-foreground">Inbox Persetujuan</h2>
@@ -83,8 +97,12 @@ export default function ApprovalInbox({ token }) {
           {pendingUsers.map(user => (
             <div key={user.id} className="bg-card text-card-foreground rounded-xl shadow-sm p-6 border border-border flex flex-col sm:flex-row justify-between items-center gap-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-5 w-full sm:w-auto">
-                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 flex items-center justify-center shrink-0 overflow-hidden">
+                  {user.profile_picture ? (
+                    <img src={user.profile_picture} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg font-bold">{user.name.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">{user.name}</h3>

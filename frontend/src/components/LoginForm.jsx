@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { login, register } from '../services/api';
+import { animate } from 'animejs';
+import { Waves } from '@appletosolutions/reactbits';
 
 export default function LoginForm({ onLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -11,6 +13,19 @@ export default function LoginForm({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      animate(cardRef.current, {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 800,
+        easing: 'easeOutExpo',
+        delay: 200
+      });
+    }
+  }, [isRegister]);
 
   const resetForm = () => {
     setUsername('');
@@ -26,13 +41,10 @@ export default function LoginForm({ onLogin }) {
     e.preventDefault();
     try {
       const response = await login(username, password);
-      // Flatten the user object so it contains token, name, role, etc. at the top level
-      // The backend returns: { success: true, data: { token: "...", user: { id: 1, name: "...", ... } } }
       const { token, user } = response.data;
       onLogin({ token, ...user });
       resetForm();
     } catch (error) {
-      // api.js throws an Error object with the message
       setError(error.message || 'Login gagal');
     }
   };
@@ -52,7 +64,6 @@ export default function LoginForm({ onLogin }) {
         resetForm();
       }, 2000);
     } catch (error) {
-      // api.js throws an Error object with the message
       setError(error.message || 'Registrasi gagal');
     }
   };
@@ -63,8 +74,23 @@ export default function LoginForm({ onLogin }) {
   };
 
   return (
-    <div className="login-container">
-      <div className="card login-card fade-in-up">
+    <div className="login-container" style={{ position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
+        <Waves
+          lineColor="#2b6ef6"
+          backgroundColor="rgba(255, 255, 255, 0)"
+          waveSpeedX={0.02}
+          waveSpeedY={0.01}
+          waveAmpX={40}
+          waveAmpY={20}
+          friction={0.9}
+          tension={0.01}
+          maxCursorMove={120}
+          xGap={12}
+          yGap={36}
+        />
+      </div>
+      <div className="card login-card" ref={cardRef} style={{ zIndex: 1, position: 'relative' }}>
         <div className="login-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-log-in"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
           <h2>{isRegister ? 'Daftar Akun Baru' : 'Selamat Datang'}</h2>

@@ -121,13 +121,27 @@ export const deleteTransaction = async (id, token) => {
 };
 
 export const updateUser = async (userId, userData, token) => {
+  const isFormData = userData instanceof FormData;
+  
+  // Laravel requires POST with _method: PUT for multipart/form-data updates
+  const method = isFormData ? 'POST' : 'PUT';
+  
+  if (isFormData) {
+    userData.append('_method', 'PUT');
+  }
+
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+  };
+
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(`${API_URL}/users/${userId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(userData),
+    method: method,
+    headers: headers,
+    body: isFormData ? userData : JSON.stringify(userData),
   });
   
   const data = await response.json();

@@ -1,19 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getTransactions, deleteTransaction, updateTransaction } from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
+import { animate, stagger } from 'animejs';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 function formatIDR(n) {
-  return n.toLocaleString('id-ID', { style:'currency', currency:'IDR', minimumFractionDigits: 0 });
+  return n.toLocaleString('id-ID', { style:'currency', currency:'IDR' });
 }
 
 export default function Dashboard({ user, token }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recapType, setRecapType] = useState('harian'); // harian, bulanan, tahunan
+  const dashboardRef = useRef(null);
 
   useEffect(() => {
     fetchData();
   }, [token]);
+
+  useEffect(() => {
+    if (!loading && dashboardRef.current) {
+      animate(dashboardRef.current.querySelectorAll('.card'), {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 600,
+        delay: stagger(100),
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [loading]);
 
   const fetchData = async () => {
     try {
@@ -86,7 +100,7 @@ export default function Dashboard({ user, token }) {
   if (loading) return <div className="p-4 text-center">Loading dashboard...</div>;
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" ref={dashboardRef}>
       <div className="welcome-header mb-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
         <p className="text-gray-600 dark:text-gray-400">
@@ -96,7 +110,7 @@ export default function Dashboard({ user, token }) {
       </div>
 
       <div className="summary-grid">
-        <div className="card summary-card">
+        <div className="card summary-card" style={{ opacity: 0 }}>
           <div className="summary-icon icon-sales">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
           </div>
@@ -105,7 +119,7 @@ export default function Dashboard({ user, token }) {
             <p className="big">{formatIDR(totals.sales)}</p>
           </div>
         </div>
-        <div className="card summary-card">
+        <div className="card summary-card" style={{ opacity: 0 }}>
           <div className="summary-icon icon-expense">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
           </div>
@@ -114,7 +128,7 @@ export default function Dashboard({ user, token }) {
             <p className="big">{formatIDR(totals.expense)}</p>
           </div>
         </div>
-        <div className="card summary-card">
+        <div className="card summary-card" style={{ opacity: 0 }}>
           <div className="summary-icon icon-profit">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           </div>
@@ -126,7 +140,7 @@ export default function Dashboard({ user, token }) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="card">
+        <div className="card" style={{ opacity: 0 }}>
           <div className="flex justify-between items-center mb-4">
             <h3>Statistik Keuangan</h3>
             <div className="flex gap-2">
@@ -171,7 +185,7 @@ export default function Dashboard({ user, token }) {
           </div>
         </div>
 
-        <div className="card">
+        <div className="card" style={{ opacity: 0 }}>
           <h3>Transaksi Terbaru</h3>
           {filteredTransactions.length === 0 && <p className="empty-state">Tidak ada transaksi untuk ditampilkan.</p>}
           {filteredTransactions.length > 0 && (

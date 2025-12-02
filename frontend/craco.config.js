@@ -9,6 +9,22 @@ const config = {
   enableHealthCheck: process.env.ENABLE_HEALTH_CHECK === "true",
 };
 
+const styleConfig = {
+  postcss: {
+    mode: 'file',
+    loaderOptions: {
+      postcssOptions: {
+        ident: 'postcss',
+        plugins: [
+          require('@tailwindcss/postcss'),
+          require('autoprefixer'),
+        ],
+      },
+    },
+  },
+};
+
+
 // Conditionally load visual editing modules only if enabled
 let babelMetadataPlugin;
 let setupDevServer;
@@ -30,9 +46,15 @@ if (config.enableHealthCheck) {
 }
 
 const webpackConfig = {
+  style: styleConfig,
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      'gsap/ScrollTrigger': 'gsap/ScrollTrigger.js',
+      'gsap/SplitText': 'gsap/SplitText.js',
+      'gsap/ScrambleTextPlugin': 'gsap/ScrambleTextPlugin.js',
+      'gsap/Observer': 'gsap/Observer.js',
+      'gsap/InertiaPlugin': 'gsap/InertiaPlugin.js',
     },
     configure: (webpackConfig) => {
 

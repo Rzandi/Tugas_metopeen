@@ -1,161 +1,51 @@
-# Frozen Food Management System
+# Tugas Metopeen - Frozen Food Management System
 
-Aplikasi manajemen penjualan dan pengeluaran untuk toko frozen food.
+A full-stack web application for managing a frozen food business, featuring transaction recording, inventory management, and user roles (Owner & Staff).
 
-## Teknologi yang Digunakan
+## Tech Stack
 
 ### Frontend
 
-- React 18
-- Vite
-- Axios untuk API calls
-- React Router untuk navigasi
+- **React.js**: UI Library
+- **Tailwind CSS v4**: Styling
+- **Anime.js v4**: Animations
+- **React Bits**: Advanced UI effects (Waves)
+- **Recharts**: Data visualization
 
 ### Backend
 
-- Laravel 10
-- MySQL database
-- Laravel Sanctum untuk authentication
-- CORS protection
+- **Laravel**: PHP Framework
+- **MySQL**: Database
+- **Sanctum**: API Authentication
 
-## Persyaratan Sistem
+## Features
 
-- Node.js 18+
-- PHP 8.1+
-- MySQL 8.0+
-- Composer
+- **Role-Based Access**:
+  - **Owner**: Full access, approve/reject staff, view reports, manage users.
+  - **Staff**: Record transactions, view daily summary.
+- **Transaction Management**: Record sales and expenses.
+- **Dashboard**: Visual analytics of sales and expenses.
+- **Profile Management**: Update profile details and upload profile pictures.
+- **Responsive Design**: Optimized for desktop and mobile.
 
-## Instalasi
+## Setup Instructions
 
-1. Clone repository:
+### Backend
 
-```bash
-git clone <repository-url>
-cd frozen-food-system
-```
+1.  Navigate to `backend` directory: `cd backend`
+2.  Install dependencies: `composer install`
+3.  Copy `.env.example` to `.env` and configure database.
+4.  Run migrations: `php artisan migrate`
+5.  Link storage: `php artisan storage:link`
+6.  Start server: `php artisan serve`
 
-2. Install dependencies frontend:
+### Frontend
 
-```bash
-npm install
-```
+1.  Navigate to `frontend` directory: `cd frontend`
+2.  Install dependencies: `npm install`
+3.  Start development server: `npm start`
 
-3. Install dependencies backend:
+## Deployment
 
-```bash
-cd backend
-composer install
-npm install
-```
-
-4. Setup environment:
-
-```bash
-cp .env.example .env
-php artisan key:generate
-```
-
-5. Setup database:
-
-- Buat database MySQL baru: `frozen_food_db`
-- Update konfigurasi database di `.env`
-
-```bash
-php artisan migrate:fresh --seed
-```
-
-## Menjalankan Aplikasi
-
-1. Backend (di terminal pertama):
-
-```bash
-cd backend
-php artisan serve
-```
-
-2. Frontend (di terminal kedua):
-
-```bash
-npm run dev
-```
-
-## Default Users
-
-1. Owner:
-
-- Username: owner
-- Password: owner123
-
-2. Staff:
-
-- Username: staff
-- Password: staff123
-
-## Fitur
-
-- [x] Login/Register
-- [x] Dashboard dengan ringkasan & visualisasi data
-- [x] Input transaksi (penjualan/pengeluaran)
-- [x] Hapus Transaksi (Owner only)
-- [x] Laporan transaksi (Owner only)
-- [x] Manajemen Anggota / Staff (Owner only)
-- [x] Update profil
-- [x] Role-based access control (Owner, Admin, Staff)
-- [x] Manajemen Daftar Harga & Stok
-- [x] Approval Workflow untuk Admin
-- [x] Dark Mode Support
-- [x] Mobile Responsive Design
-- [x] Dynamic API URL (Auto-detect Localhost/Network IP)
-
-## Struktur Direktori
-
-```
-frozen-food-system/
-├── src/                    # Frontend source files
-│   ├── components/        # React components
-│   ├── services/          # API services
-│   └── utils/            # Utility functions
-├── backend/               # Laravel backend
-│   ├── app/              # Application code
-│   ├── database/         # Migrations & seeds
-│   └── routes/           # API routes
-└── public/               # Static files
-```
-
-## API Endpoints
-
-### Public Routes
-
-- POST /api/auth/login
-- POST /api/auth/register
-
-### Protected Routes
-
-- GET /api/users
-- PUT /api/users/{id}
-- DELETE /api/users/{id}
-- GET /api/transactions
-- POST /api/transactions
-- DELETE /api/transactions/{id}
-- GET /api/transactions/summary
-
-## Testing
-
-Aplikasi ini dilengkapi dengan automated testing untuk backend.
-
-```bash
-cd backend
-php artisan test
-```
-
-## Kontribusi
-
-1. Fork repository
-2. Buat branch baru: `git checkout -b fitur-baru`
-3. Commit perubahan: `git commit -am 'Menambah fitur baru'`
-4. Push ke branch: `git push origin fitur-baru`
-5. Submit pull request
-
-```
-
-```
+- **Backend**: Ready for deployment on Railway/Vercel.
+- **Frontend**: Ready for deployment on Vercel/Netlify.

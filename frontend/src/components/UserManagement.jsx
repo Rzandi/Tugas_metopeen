@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getUsers, deleteUser } from '../services/api';
+import { animate } from 'animejs';
 
 export default function UserManagement({ token }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  const userMgmtRef = useRef(null);
+
+  useEffect(() => {
+    animate(userMgmtRef.current, {
+      translateY: [20, 0],
+      opacity: [0, 1],
+      duration: 600,
+      easing: 'easeOutQuad'
+    });
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -45,7 +57,7 @@ export default function UserManagement({ token }) {
   if (loading) return <div className="p-8 text-center text-muted-foreground">Memuat data anggota...</div>;
 
   return (
-    <div className="user-management container mx-auto p-4 max-w-5xl fade-in-up">
+    <div className="user-management container mx-auto p-4 max-w-5xl fade-in-up" ref={userMgmtRef} style={{ opacity: 0 }}>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-3xl font-bold text-foreground">Manajemen Anggota</h2>

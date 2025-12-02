@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createTransaction } from '../services/api';
+import { animate } from 'animejs';
 
 function getNowDate() {
   const d = new Date();
@@ -15,6 +16,19 @@ export default function TransactionForm({ token }) {
   const [note, setNote] = useState('');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
+  
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    if (formRef.current) {
+      animate(formRef.current, {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, []);
 
   const save = async (e) => {
     e.preventDefault();
@@ -45,7 +59,7 @@ export default function TransactionForm({ token }) {
   const total = Number(qty) * Number(price);
 
   return (
-    <div className="card">
+    <div className="card" ref={formRef} style={{ opacity: 0 }}>
       <h3 className="card-header">Input Transaksi Baru</h3>
       <form onSubmit={save} className="form-grid">
         <div className="form-group span-2">
@@ -94,7 +108,7 @@ export default function TransactionForm({ token }) {
 
         <div className="actions span-2">
           <button className="btn" type="submit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2 2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             Simpan Transaksi
           </button>
         </div>

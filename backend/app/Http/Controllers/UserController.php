@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -22,6 +23,7 @@ class UserController extends Controller
                     'username' => $user->username,
                     'role' => $user->role,
                     'last_login_at' => $user->last_login_at,
+                    'profile_picture' => $user->profile_picture ? url('storage/' . $user->profile_picture) : null,
                 ];
             })
         ]);
@@ -33,7 +35,8 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'password' => 'nullable|min:6'
+            'password' => 'nullable|min:6',
+            'profile_picture' => 'nullable|image|max:2048' // Max 2MB
         ]);
 
         $data = ['name' => $request->name];
@@ -42,7 +45,21 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
+        if ($request->hasFile('profile_picture')) {
+            // Delete old profile picture if exists
+            if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            // Store new profile picture
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $data['profile_picture'] = $path;
+        }
+
         $user->update($data);
+
+        // Return the updated user data including the full URL for the profile picture
+        $user->profile_picture = $user->profile_picture ? url('storage/' . $user->profile_picture) : null;
 
         return response()->json([
             'success' => true,
@@ -60,6 +77,11 @@ class UserController extends Controller
                 'success' => false,
                 'message' => 'Tidak dapat menghapus akun pemilik'
             ], 403);
+        }
+
+        // Delete profile picture if exists
+        if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+            Storage::disk('public')->delete($user->profile_picture);
         }
 
         $user->delete();

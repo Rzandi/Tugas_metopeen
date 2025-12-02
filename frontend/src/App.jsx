@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { animate } from 'animejs';
 import { logout } from './services/api';
 import LoginForm from './components/LoginForm';
 import Navbar from './components/Navbar';
@@ -26,6 +27,18 @@ export default function App() {
       setRoute('login');
     }
   }, []);
+
+  useEffect(() => {
+    // Animate not-auth cards when they appear
+    if (document.querySelector('.not-auth')) {
+      animate('.not-auth', {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, [route, user]);
 
   const handleRouteChange = (newRoute) => {
     setRoute(newRoute);
@@ -74,7 +87,7 @@ export default function App() {
           {user && user.role === 'owner' && route === 'users' && <UserManagement token={user.token} />}
           
           {user && user.role !== 'owner' && (route === 'report' || route === 'approvals' || route === 'users') && (
-            <div className="not-auth card">
+            <div className="not-auth card" style={{ opacity: 0 }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
               <h4>Akses Ditolak</h4>
               <p>Halaman ini hanya dapat diakses oleh Owner.</p>
@@ -82,7 +95,7 @@ export default function App() {
           )}
           
           {!user && route !== 'login' && (
-            <div className="not-auth card">
+            <div className="not-auth card" style={{ opacity: 0 }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 21h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v5"></path><line x1="7" y1="16" x2="21" y2="16"></line><line x1="16" y1="11" x2="16" y2="21"></line></svg>
               <h4>Anda Belum Login</h4>
               <p>Silakan login terlebih dahulu untuk mengakses sistem.</p>

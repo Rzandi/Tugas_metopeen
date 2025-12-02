@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getTransactions } from '../services/api';
+import { animate } from 'animejs';
 
 function formatIDR(n) {
   return n.toLocaleString('id-ID', { style:'currency', currency:'IDR' });
@@ -11,6 +12,19 @@ export default function ReportView({ token }) {
   const [to, setTo] = useState('');
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  const reportRef = useRef(null);
+
+  useEffect(() => {
+    if (reportRef.current) {
+      animate(reportRef.current, {
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 600,
+        easing: 'easeOutQuad'
+      });
+    }
+  }, []);
 
   useEffect(()=> {
     const fetchData = async () => {
@@ -63,7 +77,7 @@ export default function ReportView({ token }) {
   if (loading) return <div className="p-4 text-center">Loading report data...</div>;
 
   return (
-    <div className="report-view">
+    <div className="report-view" ref={reportRef} style={{ opacity: 0 }}>
       <div className="card">
         <h3 className="card-header">Generate Laporan</h3>
         <div className="form-inline report-filters">

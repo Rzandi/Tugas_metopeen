@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* Modern Color Palette (HSL) */
   --primary: 250 100% 65%; /* Vibrant Purple */
