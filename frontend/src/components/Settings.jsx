@@ -1,63 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { updateUser, deleteUser, getUsers } from '../services/api';
-import { animate } from 'animejs';
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { updateUser } from '../services/api';
 
-export default function Settings({ user, onUserUpdate }) {
+const Settings = ({ user, onUserUpdate }) => {
   const [name, setName] = useState(user.name);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [profilePicture, setProfilePicture] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(user.profile_picture || null);
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [isLoading, setIsLoading] = useState(false);
-  const [staffList, setStaffList] = useState([]);
-  
-  const settingsRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(user.profile_picture_url || null);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    if (settingsRef.current) {
-      animate(settingsRef.current, {
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 600,
-        easing: 'easeOutQuad'
-      });
-    }
-  }, []);
-
-  // Auto-dismiss messages after 3 seconds
-  useEffect(() => {
-    if (message.text) {
-      const timer = setTimeout(() => {
-        setMessage({ type: '', text: '' });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message.text]);
-
-  useEffect(() => {
-    const loadStaffList = async () => {
-      if (user.role === 'owner') {
-        try {
-          setIsLoading(true);
-          const response = await getUsers(user.token);
-          setStaffList(response.data);
-        } catch (error) {
-          setMessage({ type: 'error', text: error.message });
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    loadStaffList();
-  }, [user.role, user.token]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        setMessage({ type: 'error', text: 'Ukuran foto maksimal 2MB' });
+        setError('Ukuran file maksimal 2MB');
         return;
       }
       setProfilePicture(file);
@@ -65,93 +25,67 @@ export default function Settings({ user, onUserUpdate }) {
     }
   };
 
-  const handleProfileUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+    setError('');
+    setLoading(true);
 
     if (password && password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Password dan konfirmasi password tidak cocok!' });
+      setError('Password baru tidak cocok');
+      setLoading(false);
       return;
     }
 
     try {
       const formData = new FormData();
       formData.append('name', name);
-      if (password) {
-        formData.append('password', password);
-      }
-      if (profilePicture) {
-        formData.append('profile_picture', profilePicture);
-      }
+      if (password) formData.append('password', password);
+      if (profilePicture) formData.append('profile_picture', profilePicture);
 
-      const response = await updateUser(user.id, formData, user.token);
+      const updatedUser = await updateUser(user.id, formData, user.token);
       
-      // Update local user state with new data including profile picture URL
-      onUserUpdate({ ...user, ...response.data });
-      
-      setMessage({ type: 'success', text: 'Profil berhasil diperbarui!' });
+      onUserUpdate({ ...user, ...updatedUser.data });
+      setMessage('Profil berhasil diperbarui');
       setPassword('');
       setConfirmPassword('');
-      setProfilePicture(null);
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
+    } catch (err) {
+      setError(err.message || 'Gagal memperbarui profil');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleDeleteUser = async (userId, staffName) => {
-    if (!window.confirm(`Yakin ingin menghapus staff ${staffName}?`)) {
-      return;
-    }
-
-    try {
-      await deleteUser(userId, user.token);
-      setStaffList(staffList.filter(staff => staff.id !== userId));
-      setMessage({ type: 'success', text: 'Staff berhasil dihapus!' });
-    } catch (error) {
-      setMessage({ type: 'error', text: error.message });
-    }
-  };
-
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   return (
-    <div className="settings-view container mx-auto p-4 max-w-4xl" ref={settingsRef} style={{ opacity: 0 }}>
-      {message.text && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${message.type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
-           {message.type === 'success' ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-          )}
-          {message.text}
-        </div>
-      )}
-
-      {/* Hero Card for Profile Settings */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8 border border-gray-100 dark:border-gray-700">
-        <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-        <div className="px-8 pb-8">
-          <div className="relative flex justify-between items-end -mt-12 mb-6">
+    <div className="container mx-auto p-4 md:p-6 max-w-4xl">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
+      >
+        {/* Hero Section */}
+        <div className="relative h-48 bg-gradient-to-r from-blue-600 to-purple-600">
+          <div className="absolute -bottom-16 left-8">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-gray-200 flex items-center justify-center shadow-lg">
+              <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-gray-200 shadow-lg">
                 {previewUrl ? (
                   <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-2xl font-bold text-gray-500">{getInitials(user.name)}</span>
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-4xl font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
                 )}
               </div>
               <button 
                 onClick={() => fileInputRef.current.click()}
-                className="absolute bottom-0 right-0 p-1.5 bg-white dark:bg-gray-700 rounded-full shadow-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                title="Ubah Foto Profil"
+                className="absolute bottom-0 right-0 bg-white dark:bg-gray-700 p-2 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                title="Ganti Foto Profil"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
               </button>
               <input 
                 type="file" 
@@ -161,142 +95,120 @@ export default function Settings({ user, onUserUpdate }) {
                 accept="image/*"
               />
             </div>
-            <div className="mb-1">
-               <span className={`px-3 py-1 rounded-full text-sm font-medium ${user.role === 'owner' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
-                {user.role === 'owner' ? 'Owner' : 'Staff'}
-              </span>
+          </div>
+        </div>
+
+        <div className="pt-20 px-8 pb-8">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
+              <p className="text-gray-500 dark:text-gray-400">@{user.username} • <span className="capitalize">{user.role}</span></p>
+            </div>
+            <div className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium dark:bg-blue-900/30 dark:text-blue-300">
+              {user.role === 'owner' ? 'Owner Access' : 'Staff Access'}
             </div>
           </div>
 
-          <form onSubmit={handleProfileUpdate} className="space-y-6">
+          {message && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg border border-green-200 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              {message}
+            </motion.div>
+          )}
+
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              {error}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-group">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                <input 
-                  value={user.username} 
-                  disabled 
-                  className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 cursor-not-allowed"
-                />
-                <p className="text-xs text-gray-400 mt-1">Username tidak dapat diubah.</p>
-              </div>
-              <div className="form-group">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
-                <input 
-                  value={name} 
-                  onChange={e => setName(e.target.value)} 
-                  required 
-                  className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  required
                 />
               </div>
-              <div className="form-group">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password Baru</label>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  placeholder="Kosongkan jika tidak ingin mengubah"
-                  className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                <input
+                  type="text"
+                  value={user.username}
+                  disabled
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed"
                 />
-              </div>
-              <div className="form-group">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Konfirmasi Password</label>
-                <input 
-                  type="password" 
-                  value={confirmPassword} 
-                  onChange={e => setConfirmPassword(e.target.value)} 
-                  placeholder="Ulangi password baru"
-                  className="w-full px-4 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                />
+                <p className="mt-1 text-xs text-gray-500">Username tidak dapat diubah.</p>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-700">
-              <button 
-                type="submit" 
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all flex items-center gap-2"
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Ubah Password</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password Baru</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Kosongkan jika tidak ingin mengubah"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Konfirmasi Password</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Ulangi password baru"
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className={`px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                Simpan Perubahan
-              </button>
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menyimpan...
+                  </span>
+                ) : 'Simpan Perubahan'}
+              </motion.button>
             </div>
           </form>
         </div>
-      </div>
-
-      {user.role === 'owner' && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-          <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white">Manajemen Pengguna</h3>
-            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-              {staffList.filter(u => u.role === 'staff').length} Staff
-            </span>
-          </div>
-          
-          <div className="p-8">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <svg className="animate-spin h-8 w-8 mb-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p>Memuat data pengguna...</p>
-              </div>
-            ) : staffList.filter(u => u.role === 'staff').length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                </div>
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Belum Ada Staff</h4>
-                <p>Staff yang terdaftar akan muncul di sini.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-400 uppercase tracking-wider font-medium">
-                    <tr>
-                      <th className="px-6 py-4 rounded-tl-lg">Nama</th>
-                      <th className="px-6 py-4">Username</th>
-                      <th className="px-6 py-4">Role</th>
-                      <th className="px-6 py-4 rounded-tr-lg text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {staffList.filter(u => u.role === 'staff').map(staff => (
-                      <tr key={staff.username} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
-                            {staff.profile_picture ? (
-                              <img src={staff.profile_picture} alt={staff.name} className="w-full h-full rounded-full object-cover" />
-                            ) : (
-                              getInitials(staff.name)
-                            )}
-                          </div>
-                          {staff.name}
-                        </td>
-                        <td className="px-6 py-4 text-gray-500 dark:text-gray-400">{staff.username}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                            {staff.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button 
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center gap-1"
-                            onClick={() => handleDeleteUser(staff.id, staff.name)}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            Hapus
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      </motion.div>
     </div>
   );
-}
+};
+
+export default Settings;

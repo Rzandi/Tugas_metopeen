@@ -1,6 +1,7 @@
 import axios from 'axios';
+import config from '../config/api';
 
-const API_URL = 'http://localhost:8000/api/price-list';
+const API_URL = `${config.apiUrl}/price-list`;
 
 const getPriceList = async (token) => {
   const response = await axios.get(API_URL, {
