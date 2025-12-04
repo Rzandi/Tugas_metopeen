@@ -11,18 +11,20 @@ class PriceListController extends Controller
     {
         $items = PriceList::all();
 
-        // Calculate sales and purchases from transactions
-        $transactions = \App\Models\Transaction::all();
+        // Optimized: Aggregate at database level instead of loading all transactions
+        $sales = \App\Models\Transaction::selectRaw('product, SUM(quantity) as total_qty')
+            ->where('type', 'penjualan')
+            ->groupBy('product')
+            ->pluck('total_qty', 'product');
 
-        $items->transform(function ($item) use ($transactions) {
-            $item->qty_sales = $transactions->where('type', 'penjualan')
-                ->where('product', $item->product_name)
-                ->sum('quantity');
+        $purchases = \App\Models\Transaction::selectRaw('product, SUM(quantity) as total_qty')
+            ->where('type', 'pengeluaran')
+            ->groupBy('product')
+            ->pluck('total_qty', 'product');
 
-            $item->qty_purchases = $transactions->where('type', 'pengeluaran')
-                ->where('product', $item->product_name)
-                ->sum('quantity');
-
+        $items->transform(function ($item) use ($sales, $purchases) {
+            $item->qty_sales = $sales[$item->product_name] ?? 0;
+            $item->qty_purchases = $purchases[$item->product_name] ?? 0;
             return $item;
         });
 
@@ -61,7 +63,31 @@ class PriceListController extends Controller
         }
 
         $item->decrement('stock', $quantity);
-        return response()->json($item->refresh());
+
+        // Create transaction (penjualan/profit)
+        $total = $quantity * $item->price;
+        $transactionId = 'T' . time() . rand(1000, 9999);
+        while (\App\Models\Transaction::where('id', $transactionId)->exists()) {
+            $transactionId = 'T' . time() . rand(1000, 9999);
+        }
+
+        \App\Models\Transaction::create([
+            'id' => $transactionId,
+            'type' => 'penjualan',
+            'date' => now()->toDateString(),
+            'product' => $item->product_name,
+            'quantity' => $quantity,
+            'price' => $item->price,
+            'total' => $total,
+            'note' => 'Auto dari daftar barang',
+            'user_id' => $request->user()->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Penjualan berhasil disimpan',
+            'data' => $item->refresh()
+        ]);
     }
 
     public function restock(Request $request, $id)
@@ -70,6 +96,30 @@ class PriceListController extends Controller
         $quantity = $request->input('quantity', 1);
 
         $item->increment('stock', $quantity);
-        return response()->json($item->refresh());
+
+        // Create transaction (pengeluaran/cost)
+        $total = $quantity * $item->price;
+        $transactionId = 'T' . time() . rand(1000, 9999);
+        while (\App\Models\Transaction::where('id', $transactionId)->exists()) {
+            $transactionId = 'T' . time() . rand(1000, 9999);
+        }
+
+        \App\Models\Transaction::create([
+            'id' => $transactionId,
+            'type' => 'pengeluaran',
+            'date' => now()->toDateString(),
+            'product' => $item->product_name,
+            'quantity' => $quantity,
+            'price' => $item->price,
+            'total' => $total,
+            'note' => 'Auto restock dari daftar barang',
+            'user_id' => $request->user()->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Restock berhasil disimpan',
+            'data' => $item->refresh()
+        ]);
     }
 }

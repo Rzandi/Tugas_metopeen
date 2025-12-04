@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { login, register } from '../services/api';
-import { animate } from 'animejs';
-import { Waves } from '@appletosolutions/reactbits';
+
+// AnimateJS is optional - lazy load it
+let animate = () => {}; // fallback no-op
+try {
+  import('animejs').then(module => {
+    animate = module.animate;
+  }).catch(() => {
+    console.warn('AnimateJS not available in LoginForm');
+  });
+} catch (e) {
+  console.warn('AnimateJS import failed in LoginForm:', e.message);
+}
 
 export default function LoginForm({ onLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -75,21 +85,16 @@ export default function LoginForm({ onLogin }) {
 
   return (
     <div className="login-container" style={{ position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0 }}>
-        <Waves
-          lineColor="#2b6ef6"
-          backgroundColor="rgba(255, 255, 255, 0)"
-          waveSpeedX={0.02}
-          waveSpeedY={0.01}
-          waveAmpX={40}
-          waveAmpY={20}
-          friction={0.9}
-          tension={0.01}
-          maxCursorMove={120}
-          xGap={12}
-          yGap={36}
-        />
-      </div>
+      <div style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        width: '100%', 
+        height: '100%', 
+        zIndex: 0,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        opacity: 0.1
+      }}></div>
       <div className="card login-card" ref={cardRef} style={{ zIndex: 1, position: 'relative' }}>
         <div className="login-header">
           <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-log-in"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
@@ -100,12 +105,12 @@ export default function LoginForm({ onLogin }) {
         {isRegister ? (
           <form onSubmit={handleRegister}>
             <div className="form-group">
-              <label>Nama Lengkap</label>
-              <input value={name} onChange={e => setName(e.target.value)} required />
+              <label htmlFor="register-name">Nama Lengkap</label>
+              <input id="register-name" name="fullname" value={name} onChange={e => setName(e.target.value)} required />
             </div>
             <div className="form-group">
-              <label>Username</label>
-              <input value={username} onChange={e => setUsername(e.target.value)} required />
+              <label htmlFor="register-username">Username</label>
+              <input id="register-username" name="username-reg" value={username} onChange={e => setUsername(e.target.value)} required />
             </div>
             
             <div className="form-group">
@@ -135,15 +140,15 @@ export default function LoginForm({ onLogin }) {
             </div>
 
             <div className="form-group password-wrapper">
-              <label>Password</label>
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required />
+              <label htmlFor="register-password">Password</label>
+              <input id="register-password" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required />
               <span className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>}
               </span>
             </div>
             <div className="form-group password-wrapper">
-              <label>Konfirmasi Password</label>
-              <input type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+              <label htmlFor="confirm-password">Konfirmasi Password</label>
+              <input id="confirm-password" type={showPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
             </div>
             {error && <div className="error">{error}</div>}
             <button className="btn btn-primary" type="submit">Daftar</button>
@@ -152,12 +157,12 @@ export default function LoginForm({ onLogin }) {
           <form onSubmit={handleLogin}>
             {success && <div className="success">{success}</div>}
             <div className="form-group">
-              <label>Username</label>
-              <input value={username} onChange={e => setUsername(e.target.value)} required autoComplete="username" />
+              <label htmlFor="login-username">Username</label>
+              <input id="login-username" name="username-login" value={username} onChange={e => setUsername(e.target.value)} required autoComplete="username" />
             </div>
             <div className="form-group password-wrapper">
-              <label>Password</label>
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+              <label htmlFor="login-password">Password</label>
+              <input id="login-password" name="password-login" type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
               <span className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>}
               </span>

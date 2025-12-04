@@ -4,9 +4,20 @@
   --accent:#2b6ef6;
   --muted:#666;
 }
+
+.dark {
+  --bg:#1a1a1a;
+  --card:#2d2d2d;
+  --accent:#6495ed;
+  --muted:#999;
+}
+
 body{font-family: Inter, system-ui, Arial; background:var(--bg); margin:0; color:#222;}
+.dark body { color: #e0e0e0; }
+
 .app{min-height:100vh;}
-.nav{display:flex; align-items:center; justify-content:space-between; padding:16px 24px; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,0.05); z-index: 10;}
+.nav{display:flex; align-items:center; justify-content:space-between; padding:16px 24px; background:var(--card); box-shadow:0 2px 4px rgba(0,0,0,0.05); z-index: 10;}
+.dark .nav { box-shadow:0 2px 4px rgba(0,0,0,0.3); }
 .nav .brand{font-weight:700; display: flex; align-items: center; gap: 8px; font-size: 18px;}
 .nav .brand svg { color: var(--accent); }
 .nav nav { display: flex; gap: 8px; }
@@ -563,6 +574,74 @@ input.disabled {
 .message.error {
   background-color: #fee2e2;
   color: #dc2626;
+}
+
+/* Dark Mode Utilities */
+.dark .message.success {
+  background-color: #064e3b;
+  color: #86efac;
+}
+
+.dark .message.error {
+  background-color: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark .btn-outline {
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark .btn-outline:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark .nav-link {
+  color: #999;
+}
+
+.dark .nav-link:hover {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+.dark .nav-link.active {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.dark .card-header {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #333;
+  color: #e0e0e0;
+  border-color: #555;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--accent);
+  background-color: #2d2d2d;
+}
+
+.dark table {
+  color: #e0e0e0;
+}
+
+.dark th {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.dark tr:hover {
+  background-color: #333;
 }
 
 .btn.btn-danger {

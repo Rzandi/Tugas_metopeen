@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,21 @@ class AuthController extends Controller
             'role' => $role,
             'is_approved' => $isApproved
         ]);
+
+        // Create notification for admins requiring approval
+        if (!$isApproved) {
+            $owners = User::where('role', 'owner')->get();
+            foreach ($owners as $owner) {
+                Notification::create([
+                    'user_id' => $owner->id,
+                    'type' => 'approval',
+                    'title' => 'Permintaan Persetujuan Admin Baru',
+                    'message' => "Pengguna {$user->name} ({$user->username}) meminta persetujuan sebagai admin.",
+                    'data' => ['user_id' => $user->id],
+                    'action_url' => '/approvals'
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,

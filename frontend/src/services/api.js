@@ -1,6 +1,8 @@
 const getBaseUrl = () => {
-  if (process.env.REACT_APP_BACKEND_URL) {
-    return `${process.env.REACT_APP_BACKEND_URL}/api`;
+  // Support both Vite (import.meta.env) and CRA (process.env) formats
+  const backendUrl = import.meta?.env?.VITE_BACKEND_URL || process.env?.REACT_APP_BACKEND_URL;
+  if (backendUrl) {
+    return `${backendUrl}/api`;
   }
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -74,7 +76,8 @@ export const getUsers = async (token) => {
   if (!response.ok) {
     throw new Error(data.message || 'Error mengambil data pengguna');
   }
-  return data;
+  // Handle both direct array response and { data: [] } response format
+  return Array.isArray(data) ? data : (data.data || []);
 };
 
 export const createTransaction = async (transactionData, token) => {
@@ -107,7 +110,8 @@ export const getTransactions = async (token) => {
   if (!response.ok) {
     throw new Error(data.message || 'Error mengambil data transaksi');
   }
-  return data;
+  // Handle both direct array response and { data: [] } response format
+  return Array.isArray(data) ? data : (data.data || []);
 };
 
 export const deleteTransaction = async (id, token) => {
@@ -186,7 +190,8 @@ export const getPendingApprovals = async (token) => {
   if (!response.ok) {
     throw new Error(data.message || 'Error mengambil data persetujuan');
   }
-  return data;
+  // Handle both direct array response and { data: [] } response format
+  return Array.isArray(data) ? data : (data.data || []);
 };
 
 export const approveUser = async (userId, token) => {

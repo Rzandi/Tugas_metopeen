@@ -1,7 +1,29 @@
+// Environment-based configuration (Vite)
+const getBackendUrl = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  
+  if (envUrl) {
+    return envUrl;
+  }
+  
+  // Fallback logic based on hostname
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:8000';
+  }
+  
+  // Production fallback
+  return 'https://api.yourdomain.com';
+};
+
 const config = {
-    apiUrl: window.location.hostname === 'localhost' 
-        ? 'http://localhost:8000/api'
-        : 'https://tugasmetopeen-production.up.railway.app/api' // Update ini dengan URL API production Anda
+  apiUrl: getBackendUrl(),
+  apiTimeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
+  enableAnalytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
+  enableErrorReporting: import.meta.env.VITE_ENABLE_ERROR_REPORTING === 'true',
+  appName: import.meta.env.VITE_APP_NAME || 'Frozen Food Oppa',
+  env: import.meta.env.MODE || 'development',
+  isDevelopment: import.meta.env.DEV,
+  isProduction: import.meta.env.PROD,
 };
 
 export default config;

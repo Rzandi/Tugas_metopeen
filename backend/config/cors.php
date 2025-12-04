@@ -1,12 +1,36 @@
 <?php
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Cross-Origin Resource Sharing (CORS) Configuration
+    |--------------------------------------------------------------------------
+    */
+
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['*'],
+    
+    // Specify allowed origins instead of '*' for security
+    'allowed_origins' => [
+        // Development
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173',
+        
+        // Production (update with your actual domains)
+        // 'https://yourdomain.com',
+        // 'https://app.yourdomain.com',
+    ],
+    
     'allowed_origins_patterns' => [],
+    
     'allowed_headers' => ['*'],
+    
     'exposed_headers' => [],
+    
     'max_age' => 0,
-    'supports_credentials' => false,
+    
+    'supports_credentials' => true,
 ];

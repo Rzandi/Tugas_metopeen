@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createTransaction } from '../services/api';
 import priceListService from '../services/priceListService';
 import { animate } from 'animejs';
+import { motion } from 'framer-motion';
 
 function getNowDate() {
   const d = new Date();
@@ -127,18 +128,31 @@ export default function TransactionForm({ token }) {
         </div>
 
         <div className="form-group">
-          <label>Tanggal</label>
-          <input type="date" value={date} onChange={e=>setDate(e.target.value)} required />
+          <label className="flex items-center gap-1">
+            Tanggal
+            <span className="text-red-500 font-bold">*</span>
+          </label>
+          <input 
+            type="date" 
+            value={date} 
+            onChange={e=>setDate(e.target.value)} 
+            required 
+            className="focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
         </div>
 
         <div className="form-group relative" ref={wrapperRef}>
-          <label>Produk / Keterangan</label>
+          <label className="flex items-center gap-1">
+            Produk / Keterangan
+            <span className="text-red-500 font-bold">*</span>
+          </label>
           <input 
             value={product} 
             onChange={handleProductChange} 
             required 
             placeholder="Cari produk..." 
             autoComplete="off"
+            className="focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           />
           {showSuggestions && filteredProducts.length > 0 && (
             <div className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-1 max-h-60 overflow-auto">
@@ -160,13 +174,34 @@ export default function TransactionForm({ token }) {
         </div>
 
         <div className="form-group">
-          <label>Jumlah</label>
-          <input type="number" min="1" value={qty} onChange={e=>setQty(e.target.value)} required />
+          <label className="flex items-center gap-1">
+            Jumlah
+            <span className="text-red-500 font-bold">*</span>
+          </label>
+          <input 
+            type="number" 
+            min="1" 
+            value={qty} 
+            onChange={e=>setQty(e.target.value)} 
+            required 
+            className="focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
         </div>
 
         <div className="form-group">
-          <label>Harga Satuan (Rp)</label>
-          <input type="number" min="0" value={price} onChange={e=>setPrice(e.target.value)} required placeholder="e.g. 25000" />
+          <label className="flex items-center gap-1">
+            Harga Satuan (Rp)
+            <span className="text-red-500 font-bold">*</span>
+          </label>
+          <input 
+            type="number" 
+            min="0" 
+            value={price} 
+            onChange={e=>setPrice(e.target.value)} 
+            required 
+            placeholder="e.g. 25000" 
+            className="focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
         </div>
 
         <div className="form-group span-2">
@@ -186,8 +221,30 @@ export default function TransactionForm({ token }) {
           </button>
         </div>
         
-        {msg && <div className="success-toast">{msg}</div>}
-        {error && <div className="error-toast text-red-500 mt-2">{error}</div>}
+        {msg && (
+          <motion.div 
+            className="success-toast mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800/50 flex items-center gap-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            {msg}
+          </motion.div>
+        )}
+        {error && (
+          <motion.div 
+            className="error-toast text-red-700 dark:text-red-300 mt-4 p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-lg border border-red-200 dark:border-red-800/50 flex items-center gap-2"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            {error}
+          </motion.div>
+        )}
       </form>
     </div>
   );

@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Notification extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'type',
+        'title',
+        'message',
+        'data',
+        'read_at',
+        'action_url'
+    ];
+
+    protected $casts = [
+        'data' => 'json',
+        'read_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function markAsRead()
+    {
+        $this->update(['read_at' => now()]);
+    }
+
+    public function isRead()
+    {
+        return $this->read_at !== null;
+    }
+}
