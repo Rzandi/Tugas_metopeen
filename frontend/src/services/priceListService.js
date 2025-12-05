@@ -1,7 +1,9 @@
 import axios from 'axios';
 import config from '../config/api';
 
+console.log('[DEBUG] Config apiUrl:', config.apiUrl);
 const API_URL = `${config.apiUrl}/price-list`;
+console.log('[DEBUG] PriceList API_URL:', API_URL);
 
 const getPriceList = async (token) => {
   const response = await axios.get(API_URL, {
