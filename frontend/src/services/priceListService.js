@@ -2,7 +2,8 @@ import axios from 'axios';
 import config from '../config/api';
 
 console.log('[DEBUG] Config apiUrl:', config.apiUrl);
-const API_URL = `${config.apiUrl}/price-list`;
+// TEMPORARY FIX: Hardcode URL to bypass config issue
+const API_URL = 'https://tugasmetopeen-production.up.railway.app/api/price-list';
 console.log('[DEBUG] PriceList API_URL:', API_URL);
 
 const getPriceList = async (token) => {
