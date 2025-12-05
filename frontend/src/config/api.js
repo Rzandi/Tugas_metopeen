@@ -6,9 +6,11 @@ const config = {
     prodApiUrl: 'https://tugasmetopeen-production.up.railway.app/api',
     
     // Pilih URL berdasarkan environment
-    apiUrl: process.env.NODE_ENV === 'production' 
-        ? 'https://tugasmetopeen-production.up.railway.app/api'
-        : 'http://localhost:8000/api'
+    // Use import.meta.env for Vite, not process.env
+    apiUrl: import.meta.env.VITE_BACKEND_URL || 
+        (import.meta.env.PROD 
+            ? 'https://tugasmetopeen-production.up.railway.app/api'
+            : 'http://localhost:8000/api')
 };
 
 export default config;
