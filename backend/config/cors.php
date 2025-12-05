@@ -11,25 +11,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    // Specify allowed origins instead of '*' for security
-    'allowed_origins' => array_filter([
-        // Development
-        'http://localhost:3000',
-        'http://localhost:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173',
+    // TEMPORARY: Allow all origins for debugging
+    // TODO: Revert to specific origins after fixing
+    'allowed_origins' => ['*'],
 
-        // Production - Environment variable (set in Railway)
-        env('FRONTEND_URL'),
-
-        // Production - Vercel deployment
-        'https://tugas-metopeen.vercel.app',
-    ]),
-
-    // Allow Vercel preview deployments (e.g., tugas-metopeen-*.vercel.app)
-    'allowed_origins_patterns' => [
-        '/^https:\/\/tugas-metopeen.*\.vercel\.app$/',
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
