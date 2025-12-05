@@ -12,10 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Use custom CORS middleware for API routes
-        $middleware->api(prepend: [
-            \App\Http\Middleware\CorsMiddleware::class,
-        ]);
+        // CRITICAL: CORS must run BEFORE authentication
+        // This ensures CORS headers are added even if auth fails
+        $middleware->prepend(\App\Http\Middleware\CorsMiddleware::class);
 
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
