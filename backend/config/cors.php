@@ -26,7 +26,10 @@ return [
         'https://tugas-metopeen.vercel.app',
     ]),
 
-    'allowed_origins_patterns' => [],
+    // Allow Vercel preview deployments (e.g., tugas-metopeen-*.vercel.app)
+    'allowed_origins_patterns' => [
+        '/^https:\/\/tugas-metopeen.*\.vercel\.app$/',
+    ],
 
     'allowed_headers' => ['*'],
 
