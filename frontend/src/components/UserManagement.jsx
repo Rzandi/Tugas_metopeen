@@ -120,7 +120,7 @@ export default function UserManagement({ token }) {
             style={roleFilter === 'All' ? { boxShadow: '0 0 12px rgba(59, 130, 246, 0.5)' } : {}}
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
               roleFilter === 'All' 
-                ? 'bg-blue-500 text-white ring-2 ring-blue-300 dark:ring-blue-700' 
+                ? 'bg-blue-500 !text-white ring-2 ring-blue-300 dark:ring-blue-700' 
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
@@ -134,7 +134,7 @@ export default function UserManagement({ token }) {
             style={roleFilter === 'admin' ? { boxShadow: '0 0 12px rgba(168, 85, 247, 0.5)' } : {}}
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
               roleFilter === 'admin' 
-                ? 'bg-purple-500 text-white ring-2 ring-purple-300 dark:ring-purple-700' 
+                ? 'bg-purple-500 !text-white ring-2 ring-purple-300 dark:ring-purple-700' 
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
@@ -148,7 +148,7 @@ export default function UserManagement({ token }) {
             style={roleFilter === 'owner' ? { boxShadow: '0 0 12px rgba(249, 115, 22, 0.5)' } : {}}
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
               roleFilter === 'owner' 
-                ? 'bg-orange-500 text-white ring-2 ring-orange-300 dark:ring-orange-700' 
+                ? 'bg-orange-500 !text-white ring-2 ring-orange-300 dark:ring-orange-700' 
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
@@ -162,7 +162,7 @@ export default function UserManagement({ token }) {
             style={roleFilter === 'staff' ? { boxShadow: '0 0 12px rgba(34, 197, 94, 0.5)' } : {}}
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
               roleFilter === 'staff' 
-                ? 'bg-green-500 text-white ring-2 ring-green-300 dark:ring-green-700' 
+                ? 'bg-green-500 !text-white ring-2 ring-green-300 dark:ring-green-700' 
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >

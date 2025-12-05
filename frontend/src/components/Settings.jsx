@@ -196,7 +196,7 @@ const Settings = ({ user, onUserUpdate }) => {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
                       placeholder="Masukkan nama lengkap"
                       required
                     />
@@ -226,7 +226,7 @@ const Settings = ({ user, onUserUpdate }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Kosongkan jika tidak ingin mengubah"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
                     />
                     
                     {/* Password Strength Indicator */}
@@ -262,7 +262,7 @@ const Settings = ({ user, onUserUpdate }) => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Ulangi password baru"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 bg-white placeholder:text-gray-600 dark:placeholder:text-gray-400"
                     />
                     {confirmPassword && password && confirmPassword !== password && (
                       <p className="mt-2 text-xs text-red-600 dark:text-red-400 flex items-center gap-1">

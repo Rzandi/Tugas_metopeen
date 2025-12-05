@@ -65,7 +65,7 @@ export default function ApprovalInbox({ token }) {
     <div className="container mx-auto p-6 max-w-7xl" ref={containerRef}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Inbox Persetujuan</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Kelola permintaan pendaftaran pengguna baru</p>
+        <p className="text-gray-700 dark:text-gray-300 mt-1">Kelola permintaan pendaftaran pengguna baru</p>
       </div>
 
       {approvals.length === 0 ? (
@@ -74,7 +74,7 @@ export default function ApprovalInbox({ token }) {
             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Tidak Ada Permintaan Pending</h3>
-          <p className="text-gray-500 dark:text-gray-400 max-w-md">
+          <p className="text-gray-700 dark:text-gray-300 max-w-md">
             Semua permintaan pendaftaran telah diproses. Anda akan menerima notifikasi jika ada pengguna baru yang mendaftar.
           </p>
         </div>
